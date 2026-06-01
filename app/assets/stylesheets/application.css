@@ -1,15 +1,262 @@
 /*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
- * vendor/assets/stylesheets directory can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any other CSS
- * files in this directory. Styles in this file should be added after the last require_* statement.
- * It is generally better to create a new file per style scope.
- *
  *= require_tree .
  *= require_self
  */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap');
+
+:root {
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --radius-card: 14px;
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 4px 14px 0 rgb(0 0 0 / 0.09), 0 2px 4px -1px rgb(0 0 0 / 0.05);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #ffffff;
+  color: #18181b;
+}
+
+.font-display { font-family: var(--font-display); }
+
+/* ---------- Cards ---------- */
+.card {
+  background: #fff;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  border: 1px solid #f0f0f2;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card:hover { box-shadow: var(--shadow-card-hover); }
+.card-link:hover { transform: translateY(-1px); }
+
+/* ---------- Badges ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.badge-pending    { background: #f4f4f5; color: #52525b; }
+.badge-processing { background: #fef9c3; color: #92400e; }
+.badge-ready      { background: #dcfce7; color: #166534; }
+.badge-failed     { background: #fee2e2; color: #991b1b; }
+.badge-submitted  { background: #ede9fe; color: #5b21b6; }
+.badge-in_review  { background: #dbeafe; color: #1e40af; }
+.badge-rejected   { background: #fce7f3; color: #9d174d; }
+.badge-delivered  { background: #d1fae5; color: #065f46; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.btn:disabled, .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.btn-violet       { background: #7c3aed; color: #fff; }
+.btn-violet:hover { background: #6d28d9; box-shadow: 0 2px 8px rgb(124 58 237 / 0.3); }
+
+.btn-emerald       { background: #059669; color: #fff; }
+.btn-emerald:hover { background: #047857; box-shadow: 0 2px 8px rgb(5 150 105 / 0.3); }
+
+.btn-amber       { background: #d97706; color: #fff; }
+.btn-amber:hover { background: #b45309; box-shadow: 0 2px 8px rgb(217 119 6 / 0.3); }
+
+.btn-rose       { background: #e11d48; color: #fff; }
+.btn-rose:hover { background: #be123c; box-shadow: 0 2px 8px rgb(225 29 72 / 0.25); }
+
+.btn-slate       { background: #1e293b; color: #fff; }
+.btn-slate:hover { background: #0f172a; }
+
+.btn-ghost {
+  background: transparent;
+  color: #52525b;
+  border: 1px solid #e4e4e7;
+}
+.btn-ghost:hover { background: #f8f8f9; color: #18181b; border-color: #d4d4d8; }
+
+.btn-sm { padding: 5px 12px; font-size: 12.5px; border-radius: 7px; }
+.btn-lg { padding: 11px 22px; font-size: 14.5px; }
+
+/* ---------- Data tables ---------- */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-weight: 500;
+  color: #71717a;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #f1f1f2;
+  background: #fafafa;
+}
+.data-table th:first-child { border-radius: 12px 0 0 0; }
+.data-table th:last-child  { border-radius: 0 12px 0 0; }
+.data-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid #f8f8f8;
+  color: #3f3f46;
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+.data-table tbody tr:hover td { background: #fafafa; }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+/* ---------- Form inputs ---------- */
+.input {
+  width: 100%;
+  padding: 9px 13px;
+  border: 1px solid #e4e4e7;
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: #fff;
+  color: #18181b;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  line-height: 1.5;
+}
+.input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 0.1);
+}
+.input::placeholder { color: #a1a1aa; }
+.input-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #3f3f46;
+  margin-bottom: 6px;
+}
+
+/* ---------- Page layout ---------- */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: #18181b;
+  line-height: 1.15;
+  font-style: italic;
+}
+.page-subtitle {
+  font-size: 13.5px;
+  color: #71717a;
+  margin-top: 3px;
+}
+
+/* ---------- Section divider ---------- */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  margin-bottom: 12px;
+}
+
+/* ---------- Chat / prose ---------- */
+.prose-chat p { margin: 0 0 8px; line-height: 1.65; }
+.prose-chat p:last-child { margin-bottom: 0; }
+.prose-chat ul, .prose-chat ol { margin: 8px 0 8px 18px; }
+.prose-chat li { margin-bottom: 4px; line-height: 1.55; }
+.prose-chat strong { font-weight: 600; }
+.prose-chat em { font-style: italic; }
+.prose-chat code {
+  background: rgb(0 0 0 / 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.88em;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+.prose-chat h1, .prose-chat h2, .prose-chat h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  margin: 12px 0 6px;
+}
+
+/* ---------- Typing animation ---------- */
+@keyframes pulse-dot {
+  0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+.typing-dot {
+  width: 7px; height: 7px;
+  background: #a1a1aa;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ---------- Empty state ---------- */
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  color: #a1a1aa;
+}
+.empty-state-icon {
+  width: 52px; height: 52px;
+  margin: 0 auto 16px;
+  color: #d4d4d8;
+}
+.empty-state-title { font-size: 15px; font-weight: 500; color: #52525b; margin-bottom: 6px; }
+.empty-state-desc  { font-size: 13.5px; color: #a1a1aa; margin-bottom: 20px; }
+
+/* ---------- Stat card ---------- */
+.stat-card { padding: 20px 24px; }
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1;
+  font-style: italic;
+  margin-bottom: 4px;
+}
+.stat-label { font-size: 12.5px; color: #71717a; font-weight: 500; }
+
+/* ---------- Nav ---------- */
+.pipelin-logo {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-style: italic;
+  color: #18181b;
+  letter-spacing: -0.01em;
+}
+.pipelin-logo span { color: #7c3aed; }
+
+/* ---------- Scroll hint for chat ---------- */
+.messages-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #e4e4e7 transparent;
+}
+.messages-scroll::-webkit-scrollbar { width: 4px; }
+.messages-scroll::-webkit-scrollbar-track { background: transparent; }
+.messages-scroll::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 4px; }

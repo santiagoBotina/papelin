@@ -1,33 +1,77 @@
-<% content_for :title, "Mis Solicitudes de Certificados" %>
+<% content_for :title, "Certificados" %>
 
-<h1 class="text-2xl font-semibold text-gray-900 mb-6">Mis Solicitudes de Certificados</h1>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Mis certificados</h1>
+    <p class="page-subtitle">Historial y estado de tus solicitudes</p>
+  </div>
+</div>
 
 <% if @certificate_requests.present? %>
-  <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
-    <table class="w-full text-sm">
+  <%# Summary cards %>
+  <%
+    active_count   = @certificate_requests.count { |r| !r.delivered? && !r.rejected? }
+    ready_count    = @certificate_requests.count(&:ready?)
+    overdue_count  = @certificate_requests.count(&:overdue?)
+  %>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+    <div class="card stat-card">
+      <p class="stat-value" style="color:#5b21b6;"><%= @certificate_requests.count %></p>
+      <p class="stat-label">Total solicitudes</p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-value" style="color:#1e40af;"><%= active_count %></p>
+      <p class="stat-label">En proceso</p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-value" style="color:#166534;"><%= ready_count %></p>
+      <p class="stat-label">Listas</p>
+    </div>
+    <div class="card stat-card">
+      <p class="stat-value" style="color:#991b1b;"><%= overdue_count %></p>
+      <p class="stat-label">Vencidas</p>
+    </div>
+  </div>
+
+  <div class="card overflow-hidden">
+    <table class="data-table">
       <thead>
-        <tr class="border-b border-gray-200 bg-gray-50">
-          <th class="text-left py-3 px-4 font-medium text-gray-600">Referencia</th>
-          <th class="text-left py-3 px-4 font-medium text-gray-600">Tipo</th>
-          <th class="text-left py-3 px-4 font-medium text-gray-600">Estado</th>
-          <th class="text-left py-3 px-4 font-medium text-gray-600">Solicitado</th>
-          <th class="text-left py-3 px-4 font-medium text-gray-600">Esperado</th>
+        <tr>
+          <th>Referencia</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th>Solicitado</th>
+          <th>Fecha esperada</th>
         </tr>
       </thead>
       <tbody>
         <% @certificate_requests.each do |cr| %>
-          <tr class="border-b border-gray-100 hover:bg-gray-50">
-            <td class="py-3 px-4">
-              <%= link_to cr.reference_number, certificate_request_path(cr), class: "text-blue-600 hover:text-blue-800 font-medium" %>
+          <tr>
+            <td>
+              <%= link_to cr.reference_number, certificate_request_path(cr),
+                    style: "font-weight:600; color:#7c3aed; font-size:13px; font-family:monospace;" %>
             </td>
-            <td class="py-3 px-4 text-gray-700"><%= cr.cert_type.humanize %></td>
-            <td class="py-3 px-4">
-              <span class="<%= cr.overdue? ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700' %> text-xs px-2 py-0.5 rounded-full">
-                <%= cr.human_status %>
-              </span>
+            <td>
+              <span style="font-size:13px; color:#3f3f46;"><%= cr.cert_type.humanize %></span>
             </td>
-            <td class="py-3 px-4 text-gray-500"><%= l(cr.requested_at, format: :short) %></td>
-            <td class="py-3 px-4 text-gray-500"><%= cr.expected_ready_at ? l(cr.expected_ready_at, format: :short) : "—" %></td>
+            <td>
+              <% if cr.overdue? %>
+                <span class="badge badge-failed">Vencida</span>
+              <% else %>
+                <span class="badge badge-<%= cr.status %>"><%= cr.human_status %></span>
+              <% end %>
+            </td>
+            <td style="color:#71717a;"><%= l(cr.requested_at, format: :short) %></td>
+            <td>
+              <% if cr.expected_ready_at %>
+                <span style="color:<%= cr.overdue? ? '#b91c1c' : '#71717a' %>">
+                  <%= l(cr.expected_ready_at, format: :short) %>
+                  <%= " (vencida)" if cr.overdue? %>
+                </span>
+              <% else %>
+                <span style="color:#d4d4d8;">—</span>
+              <% end %>
+            </td>
           </tr>
         <% end %>
       </tbody>
@@ -35,12 +79,14 @@
   </div>
 
   <% if defined?(@pagy) && @pagy %>
-    <div class="mt-6">
-      <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
-    </div>
+    <div class="mt-8"><%== pagy_nav(@pagy) if @pagy.pages > 1 %></div>
   <% end %>
 <% else %>
-  <div class="text-center py-16">
-    <p class="text-gray-500 text-lg">No tienes solicitudes de certificados.</p>
+  <div class="empty-state">
+    <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+    </svg>
+    <p class="empty-state-title">Sin solicitudes aún</p>
+    <p class="empty-state-desc">Cuando solicites un certificado aparecerá aquí</p>
   </div>
 <% end %>

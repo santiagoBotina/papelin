@@ -8,6 +8,7 @@ module Admin
       @pending_count   = Document.pending.count + Document.processing.count
       @failed_count    = Document.failed.count
       @users_count     = User.count
+      @documents       = Document.includes(:uploaded_by).recent.limit(10)
     end
   end
 end

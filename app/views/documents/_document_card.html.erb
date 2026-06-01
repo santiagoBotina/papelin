@@ -1,17 +1,36 @@
 <%# local: document %>
-<div id="<%= dom_id(document) %>"
-     class="bg-white rounded-xl border border-gray-200 p-4 flex flex-col gap-3 hover:border-blue-200 hover:shadow-sm transition-all">
+<%
+  type_colors = {
+    "policy"    => { bg: "#f0fdf4", color: "#166534", dot: "#22c55e" },
+    "procedure" => { bg: "#eff6ff", color: "#1e40af", dot: "#3b82f6" },
+    "faq"       => { bg: "#fff7ed", color: "#9a3412", dot: "#f97316" },
+    "template"  => { bg: "#fdf4ff", color: "#86198f", dot: "#d946ef" },
+  }
+  tc = type_colors[document.doc_type] || { bg: "#f9fafb", color: "#374151", dot: "#9ca3af" }
+%>
+<div id="<%= dom_id(document) %>" class="card card-link flex flex-col p-5 gap-3">
   <div class="flex items-start justify-between gap-2">
-    <h3 class="font-medium text-gray-900 text-sm leading-tight"><%= document.title %></h3>
-    <span class="<%= status_badge_classes(document.status) %> text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
-      <%= document.status.humanize %>
-    </span>
+    <div class="flex-1">
+      <span class="badge" style="background:<%= tc[:bg] %>; color:<%= tc[:color] %>; margin-bottom:8px; display:inline-flex;">
+        <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background:<%= tc[:dot] %>;"></span>
+        <%= document.doc_type.humanize %>
+      </span>
+      <h3 style="font-size:14px; font-weight:600; color:#18181b; line-height:1.3;"><%= document.title %></h3>
+    </div>
+    <span class="badge badge-<%= document.status %> shrink-0"><%= document.status.humanize %></span>
   </div>
   <% if document.description.present? %>
-    <p class="text-sm text-gray-500 line-clamp-2"><%= document.description %></p>
+    <p style="font-size:13px; color:#71717a; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">
+      <%= document.description %>
+    </p>
   <% end %>
-  <div class="flex items-center justify-between text-xs text-gray-400 mt-auto pt-2 border-t border-gray-100">
-    <span><%= document.doc_type.humanize %></span>
-    <span><%= document.chunks_count %> secciones</span>
+  <div class="flex items-center justify-between mt-auto pt-3" style="border-top:1px solid #f4f4f5;">
+    <div class="flex items-center gap-1" style="font-size:12px; color:#a1a1aa;">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+      </svg>
+      <%= document.chunks_count %> secciones
+    </div>
+    <span style="font-size:11.5px; color:#a1a1aa;"><%= time_ago_in_words(document.created_at) %></span>
   </div>
 </div>

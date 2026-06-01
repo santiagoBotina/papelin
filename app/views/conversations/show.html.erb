@@ -1,49 +1,75 @@
 <% content_for :title, @conversation.title.presence || "Conversación" %>
-
 <%= turbo_stream_from "conversation_#{@conversation.id}" %>
 
-<div class="flex flex-col h-[calc(100vh-12rem)]">
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-    <div>
-      <h1 class="text-xl font-semibold text-gray-900">
-        <%= @conversation.title.presence || "Nueva conversación" %>
-      </h1>
-      <p class="text-sm text-gray-500">
-        <%= l(@conversation.created_at, format: :long) %>
-      </p>
+<div class="flex flex-col" style="height: calc(100vh - 106px);">
+
+  <%# Chat header %>
+  <div class="flex items-center justify-between pb-4 mb-0" style="border-bottom: 1px solid #f4f4f5;">
+    <div class="flex items-center gap-3">
+      <%= link_to conversations_path, class: "btn btn-ghost btn-sm" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      <% end %>
+      <div>
+        <h1 style="font-size:15px; font-weight:600; color:#18181b; line-height:1.2;">
+          <%= @conversation.title.presence || "Nueva conversación" %>
+        </h1>
+        <p style="font-size:12px; color:#a1a1aa;"><%= l(@conversation.created_at, format: :long) %></p>
+      </div>
     </div>
-    <%= link_to conversations_path, class: "text-sm text-gray-500 hover:text-gray-700" do %>
-      &larr; Volver
-    <% end %>
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2 rounded-full" style="background:#22c55e;"></div>
+      <span style="font-size:12px; color:#71717a; font-weight:500;">Asistente activo</span>
+    </div>
   </div>
 
-  <!-- Messages -->
+  <%# Messages area %>
   <div id="messages"
        data-controller="chat"
        data-chat-target="messages"
-       class="flex-1 overflow-y-auto px-2 py-4 space-y-4">
-    <%= render @conversation.messages.visible %>
+       class="flex-1 overflow-y-auto messages-scroll py-6 space-y-5 px-1">
+    <% if @conversation.messages.visible.empty? %>
+      <div class="flex flex-col items-center justify-center h-full text-center px-4">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:#f5f3ff;">
+          <svg class="w-6 h-6" style="color:#7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+        </div>
+        <p style="font-size:14px; font-weight:500; color:#52525b; margin-bottom:4px;">Empieza la conversación</p>
+        <p style="font-size:13px; color:#a1a1aa;">Pregunta sobre solicitudes de certificados, procesos de RRHH o documentos.</p>
+      </div>
+    <% else %>
+      <%= render @conversation.messages.visible %>
+    <% end %>
   </div>
 
-  <!-- Input form -->
-  <div class="border-t border-gray-200 pt-4 mt-4">
+  <%# Input area %>
+  <div class="pt-4" style="border-top: 1px solid #f4f4f5;">
     <%= form_with url: conversation_messages_path(@conversation),
                   data: { controller: "chat",
                           action: "submit->chat#disableSubmit turbo:submit-end->chat#enableSubmit",
-                          turbo_frame: "_top" },
-                  class: "flex gap-3 items-end" do |f| %>
-      <div class="flex-1">
-        <%= f.text_area :content,
-                        data: { "chat-target": "input" },
-                        placeholder: "Escribe tu mensaje...",
-                        class: "w-full rounded-lg border border-gray-300 p-3 resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm",
-                        rows: 2,
-                        required: true %>
+                          turbo_frame: "_top" } do |f| %>
+      <div class="flex gap-3 items-end">
+        <div class="flex-1">
+          <%= f.text_area :content,
+              data: { "chat-target": "input" },
+              placeholder: "Escribe tu pregunta…",
+              rows: 2,
+              required: true,
+              style: "width:100%; padding:10px 14px; border:1px solid #e4e4e7; border-radius:12px; font-size:14px; font-family:inherit; resize:none; outline:none; transition:border-color .15s, box-shadow .15s; line-height:1.5;",
+              onfocus: "this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgb(124 58 237 / 0.1)'",
+              onblur:  "this.style.borderColor='#e4e4e7';this.style.boxShadow='none'" %>
+        </div>
+        <%= f.submit "Enviar",
+            data: { "chat-target": "submit" },
+            class: "btn btn-violet",
+            style: "align-self:flex-end; padding:10px 20px;" %>
       </div>
-      <%= f.submit "Enviar",
-                   data: { "chat-target": "submit" },
-                   class: "px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium" %>
+      <p style="font-size:11.5px; color:#a1a1aa; margin-top:6px; text-align:center;">
+        Las respuestas se generan con IA y pueden contener inexactitudes. Verifica información importante.
+      </p>
     <% end %>
   </div>
+
 </div>

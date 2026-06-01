@@ -1,39 +1,73 @@
-<% content_for :title, "Panel de Administración" %>
+<% content_for :title, "Panel Admin" %>
 
-<h1 class="text-2xl font-semibold text-gray-900 mb-6">Panel de Administración</h1>
-
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-  <%= render "admin/dashboard/stat_card", label: "Total Documentos", value: Document.count, color: "blue" %>
-  <%= render "admin/dashboard/stat_card", label: "Documentos Listos", value: Document.ready.count, color: "green" %>
-  <%= render "admin/dashboard/stat_card", label: "Conversaciones Activas", value: Conversation.active.count, color: "indigo" %>
-  <%= render "admin/dashboard/stat_card", label: "Usuarios", value: User.count, color: "purple" %>
-  <%= render "admin/dashboard/stat_card", label: "Solicitudes de Certificados", value: CertificateRequest.count, color: "teal" %>
-  <%= render "admin/dashboard/stat_card", label: "Fragmentos de Documentos", value: DocumentChunk.count, color: "orange" %>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Panel de administración</h1>
+    <p class="page-subtitle">Resumen del sistema · <%= Date.current.strftime("%B %Y").capitalize %></p>
+  </div>
+  <div class="flex gap-2">
+    <%= link_to admin_users_path, class: "btn btn-ghost btn-sm" do %>
+      Gestionar usuarios
+    <% end %>
+    <%= link_to admin_documents_path, class: "btn btn-ghost btn-sm" do %>
+      Ver documentos
+    <% end %>
+  </div>
 </div>
 
-<h2 class="text-lg font-medium text-gray-900 mb-4">Documentos Recientes</h2>
+<%# Stats grid %>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+  <% [
+    { label: "Documentos",     value: @documents_count, color: "#4f46e5" },
+    { label: "Listos",         value: @ready_count,     color: "#059669" },
+    { label: "Procesando",     value: @pending_count,   color: "#d97706" },
+    { label: "Con errores",    value: @failed_count,    color: "#e11d48" },
+    { label: "Usuarios",       value: @users_count,     color: "#7c3aed" },
+    { label: "Conversaciones", value: Conversation.active.count, color: "#0284c7" },
+  ].each do |stat| %>
+    <div class="card stat-card">
+      <p class="stat-value" style="color:<%= stat[:color] %>;"><%= stat[:value] %></p>
+      <p class="stat-label"><%= stat[:label] %></p>
+    </div>
+  <% end %>
+</div>
 
-<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-  <table class="w-full text-sm">
-    <thead>
-      <tr class="border-b border-gray-200 bg-gray-50">
-        <th class="text-left py-3 px-4 font-medium text-gray-600">Título</th>
-        <th class="text-left py-3 px-4 font-medium text-gray-600">Estado</th>
-        <th class="text-left py-3 px-4 font-medium text-gray-600">Secciones</th>
-        <th class="text-left py-3 px-4 font-medium text-gray-600">Subido</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @documents.each do |doc| %>
-        <tr class="border-b border-gray-100 hover:bg-gray-50">
-          <td class="py-3 px-4 font-medium text-gray-900"><%= doc.title %></td>
-          <td class="py-3 px-4">
-            <span class="<%= status_badge_classes(doc.status) %> text-xs px-2 py-0.5 rounded-full"><%= doc.status.humanize %></span>
-          </td>
-          <td class="py-3 px-4 text-gray-500"><%= doc.chunks_count %></td>
-          <td class="py-3 px-4 text-gray-500"><%= time_ago_in_words(doc.created_at) %></td>
+<%# Recent documents table %>
+<div class="flex items-center justify-between mb-4">
+  <p class="section-label">Documentos recientes</p>
+  <%= link_to "Ver todos →", admin_documents_path, style: "font-size:13px; color:#7c3aed; font-weight:500;" %>
+</div>
+
+<% if @documents.present? %>
+  <div class="card overflow-hidden">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Estado</th>
+          <th>Secciones</th>
+          <th>Subido por</th>
+          <th>Hace</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
+      </thead>
+      <tbody>
+        <% @documents.each do |doc| %>
+          <tr>
+            <td>
+              <%= link_to doc.title, admin_document_path(doc),
+                    style: "font-weight:500; color:#18181b;" %>
+            </td>
+            <td><span class="badge badge-<%= doc.status %>"><%= doc.status.humanize %></span></td>
+            <td style="color:#71717a;"><%= doc.chunks_count %></td>
+            <td style="color:#71717a;"><%= doc.uploaded_by.display_name %></td>
+            <td style="color:#a1a1aa;"><%= time_ago_in_words(doc.created_at) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="empty-state">
+    <p class="empty-state-title">No hay documentos aún</p>
+  </div>
+<% end %>

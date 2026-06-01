@@ -1,22 +1,52 @@
-<nav class="bg-gray-900 text-white">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-6">
-      <%= link_to "Pipelin", root_path, class: "text-lg font-semibold tracking-tight" %>
-    </div>
-    <div class="flex items-center gap-4 text-sm">
-      <% if user_signed_in? %>
-        <%= link_to "Mis Conversaciones", conversations_path, class: "hover:text-gray-300 transition-colors" %>
-        <%= link_to "Documentos", documents_path, class: "hover:text-gray-300 transition-colors" %>
-        <% if current_user.admin? %>
-          <%= link_to "Admin", admin_root_path, class: "hover:text-gray-300 transition-colors" %>
+<nav class="bg-white border-b border-zinc-100 sticky top-0 z-50" style="backdrop-filter: blur(8px);">
+  <div class="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
+
+    <%# Logo %>
+    <%= link_to root_path, class: "pipelin-logo shrink-0" do %>
+      Pipe<span>lin</span>
+    <% end %>
+
+    <%# Main nav links (authenticated) %>
+    <% if user_signed_in? %>
+      <div class="hidden sm:flex items-center gap-1 flex-1">
+        <%= link_to conversations_path,
+              class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ request.path.start_with?('/conversations') ? 'bg-violet-50 text-violet-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
+          <span>Conversaciones</span>
         <% end %>
-        <span class="text-gray-400">|</span>
-        <span class="text-gray-300"><%= current_user.display_name %></span>
-        <%= button_to "Cerrar Sesión", destroy_user_session_path, method: :delete,
-                      class: "bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-lg transition-colors" %>
-      <% else %>
-        <%= link_to "Iniciar Sesión", new_user_session_path, class: "bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg transition-colors" %>
-      <% end %>
-    </div>
+        <%= link_to documents_path,
+              class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ request.path.start_with?('/documents') ? 'bg-emerald-50 text-emerald-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
+          <span>Documentos</span>
+        <% end %>
+        <%= link_to certificate_requests_path,
+              class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ request.path.start_with?('/certificate') ? 'bg-amber-50 text-amber-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
+          <span>Certificados</span>
+        <% end %>
+        <% if current_user.admin? %>
+          <%= link_to admin_root_path,
+                class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ request.path.start_with?('/admin') ? 'bg-purple-50 text-purple-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
+            <span>Admin</span>
+          <% end %>
+        <% end %>
+      </div>
+
+      <%# Right: user + sign out %>
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="hidden sm:flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-semibold">
+            <%= current_user.first_name[0]&.upcase %><%= current_user.last_name[0]&.upcase %>
+          </div>
+          <span class="text-sm text-zinc-600 font-medium"><%= current_user.display_name %></span>
+        </div>
+        <%= button_to destroy_user_session_path, method: :delete,
+              class: "btn btn-ghost btn-sm" do %>
+          Salir
+        <% end %>
+      </div>
+    <% else %>
+      <div class="ml-auto">
+        <%= link_to "Iniciar sesión", new_user_session_path, class: "btn btn-slate btn-sm" %>
+      </div>
+    <% end %>
+
   </div>
 </nav>
