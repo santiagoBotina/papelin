@@ -3,7 +3,7 @@
 class MessagesController < ApplicationController
   def create
     @conversation = Conversation.find(params[:conversation_id])
-    authorize @conversation
+    authorize @conversation, :show?
 
     content = message_params[:content].to_s.strip
     return redirect_to @conversation if content.blank?

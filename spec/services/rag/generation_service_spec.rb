@@ -58,7 +58,7 @@ RSpec.describe Rag::GenerationService do
       expect(client).to receive(:chat) do |params|
         first = params[:parameters][:messages].first
         expect(first[:role]).to eq('system')
-        expect(first[:content]).to include('HR certificate process')
+        expect(first[:content]).to include('Pipelin')
         fake_response
       end
 

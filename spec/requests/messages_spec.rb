@@ -54,10 +54,10 @@ RSpec.describe 'Messages', type: :request do
       context 'with empty content' do
         let(:empty_params) { { message: { content: '' } } }
 
-        it 'still creates messages and redirects' do
+        it 'does not create messages and redirects back to conversation' do
           expect do
             post conversation_messages_path(conversation), params: empty_params
-          end.to change(Message, :count).by(2)
+          end.not_to change(Message, :count)
 
           expect(response).to redirect_to(conversation_path(conversation))
         end
