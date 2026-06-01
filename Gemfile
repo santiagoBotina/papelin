@@ -31,7 +31,7 @@ gem 'active_storage_validations'
 
 # Background jobs
 gem 'redis'
-gem 'sidekiq', '~> 7.0'
+gem 'sidekiq', '~> 8.0'
 gem 'sidekiq-cron'
 
 # Document parsing
