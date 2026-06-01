@@ -3,19 +3,16 @@
 class DocumentsController < ApplicationController
   def index
     @documents = policy_scope(Document).recent
-    render plain: 'placeholder'
   end
 
   def show
     @document = Document.find(params[:id])
     authorize @document
-    render plain: 'placeholder'
   end
 
   def new
     @document = Document.new
     authorize @document
-    render plain: 'placeholder'
   end
 
   def create

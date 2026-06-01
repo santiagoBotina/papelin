@@ -3,13 +3,13 @@
 class ConversationsController < ApplicationController
   def index
     @conversations = policy_scope(Conversation).recent
-    render plain: 'placeholder'
   end
 
   def show
     @conversation = Conversation.find(params[:id])
     authorize @conversation
-    render plain: 'placeholder'
+    @messages = @conversation.messages.order(:created_at)
+    @message = Message.new
   end
 
   def create

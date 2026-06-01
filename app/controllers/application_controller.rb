@@ -5,10 +5,8 @@ class ApplicationController < ActionController::Base
 
   before_action :authenticate_user!
 
-  after_action :verify_authorized, except: :index,
-               unless: :devise_controller?
-  after_action :verify_policy_scoped, only: :index,
-               unless: :devise_controller?
+  after_action :verify_authorized, unless: -> { devise_controller? || action_name == "index" }
+  after_action :verify_policy_scoped, unless: -> { devise_controller? || action_name != "index" }
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   rescue_from ActiveRecord::RecordNotFound, with: :not_found

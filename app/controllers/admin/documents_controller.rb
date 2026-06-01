@@ -4,12 +4,10 @@ module Admin
   class DocumentsController < BaseController
     def index
       @documents = Document.recent
-      render plain: 'placeholder'
     end
 
     def show
       @document = Document.find(params[:id])
-      render plain: 'placeholder'
     end
 
     def destroy

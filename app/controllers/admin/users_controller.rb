@@ -4,17 +4,14 @@ module Admin
   class UsersController < BaseController
     def index
       @users = User.order(created_at: :desc)
-      render plain: 'placeholder'
     end
 
     def show
       @user = User.find(params[:id])
-      render plain: 'placeholder'
     end
 
     def new
       @user = User.new
-      render plain: 'placeholder'
     end
 
     def create
@@ -28,7 +25,6 @@ module Admin
 
     def edit
       @user = User.find(params[:id])
-      render plain: 'placeholder'
     end
 
     def destroy
