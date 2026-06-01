@@ -1,0 +1,9 @@
+This is a sample document for testing file uploads in the Certificate Assistant application.
+It contains some text that can be used to verify that the RAG pipeline works correctly.
+
+Payroll certificates require the following documents:
+1. A completed request form
+2. Proof of employment
+3. Government-issued ID
+
+The processing time is typically 3-5 business days.

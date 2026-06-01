@@ -1,0 +1,46 @@
+<% content_for :title, "Mis Solicitudes de Certificados" %>
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">Mis Solicitudes de Certificados</h1>
+
+<% if @certificate_requests.present? %>
+  <div class="overflow-x-auto bg-white rounded-xl border border-gray-200">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-200 bg-gray-50">
+          <th class="text-left py-3 px-4 font-medium text-gray-600">Referencia</th>
+          <th class="text-left py-3 px-4 font-medium text-gray-600">Tipo</th>
+          <th class="text-left py-3 px-4 font-medium text-gray-600">Estado</th>
+          <th class="text-left py-3 px-4 font-medium text-gray-600">Solicitado</th>
+          <th class="text-left py-3 px-4 font-medium text-gray-600">Esperado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @certificate_requests.each do |cr| %>
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="py-3 px-4">
+              <%= link_to cr.reference_number, certificate_request_path(cr), class: "text-blue-600 hover:text-blue-800 font-medium" %>
+            </td>
+            <td class="py-3 px-4 text-gray-700"><%= cr.cert_type.humanize %></td>
+            <td class="py-3 px-4">
+              <span class="<%= cr.overdue? ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700' %> text-xs px-2 py-0.5 rounded-full">
+                <%= cr.human_status %>
+              </span>
+            </td>
+            <td class="py-3 px-4 text-gray-500"><%= l(cr.requested_at, format: :short) %></td>
+            <td class="py-3 px-4 text-gray-500"><%= cr.expected_ready_at ? l(cr.expected_ready_at, format: :short) : "—" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if defined?(@pagy) && @pagy %>
+    <div class="mt-6">
+      <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="text-center py-16">
+    <p class="text-gray-500 text-lg">No tienes solicitudes de certificados.</p>
+  </div>
+<% end %>

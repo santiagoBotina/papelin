@@ -1,0 +1,39 @@
+<% content_for :title, "Panel de Administración" %>
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">Panel de Administración</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+  <%= render "admin/dashboard/stat_card", label: "Total Documentos", value: Document.count, color: "blue" %>
+  <%= render "admin/dashboard/stat_card", label: "Documentos Listos", value: Document.ready.count, color: "green" %>
+  <%= render "admin/dashboard/stat_card", label: "Conversaciones Activas", value: Conversation.active.count, color: "indigo" %>
+  <%= render "admin/dashboard/stat_card", label: "Usuarios", value: User.count, color: "purple" %>
+  <%= render "admin/dashboard/stat_card", label: "Solicitudes de Certificados", value: CertificateRequest.count, color: "teal" %>
+  <%= render "admin/dashboard/stat_card", label: "Fragmentos de Documentos", value: DocumentChunk.count, color: "orange" %>
+</div>
+
+<h2 class="text-lg font-medium text-gray-900 mb-4">Documentos Recientes</h2>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-gray-200 bg-gray-50">
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Título</th>
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Estado</th>
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Secciones</th>
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Subido</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @documents.each do |doc| %>
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-3 px-4 font-medium text-gray-900"><%= doc.title %></td>
+          <td class="py-3 px-4">
+            <span class="<%= status_badge_classes(doc.status) %> text-xs px-2 py-0.5 rounded-full"><%= doc.status.humanize %></span>
+          </td>
+          <td class="py-3 px-4 text-gray-500"><%= doc.chunks_count %></td>
+          <td class="py-3 px-4 text-gray-500"><%= time_ago_in_words(doc.created_at) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,68 @@
+<% content_for :title, "Subir Documento" %>
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">Subir Documento</h1>
+
+<div class="max-w-xl">
+  <%= form_with model: @document, class: "space-y-6" do |f| %>
+    <% if @document.errors.any? %>
+      <div class="bg-red-50 border border-red-300 text-red-800 rounded-lg px-4 py-3 text-sm">
+        <ul class="list-disc list-inside">
+          <% @document.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :title, "Título", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :title, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <%= f.label :doc_type, "Tipo de Documento", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :doc_type,
+                   options_for_select(Document.doc_types.keys.map { |t| [t.humanize, t] }),
+                   {},
+                   class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <%= f.label :description, "Descripción", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_area :description, rows: 3,
+                      class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <%= f.hidden_field :file %>
+
+    <div data-controller="upload">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Archivo</label>
+      <div data-upload-target="dropzone"
+           data-action="dragover->upload#dragover dragleave->upload#dragleave drop->upload#drop"
+           class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer transition-colors duration-150 hover:border-blue-400">
+        <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+        <p class="text-gray-500 text-sm">Arrastra y suelta un archivo PDF, DOCX o TXT aquí</p>
+        <p class="text-gray-400 text-xs mt-1 mb-3">o</p>
+        <div class="relative">
+          <%= f.file_field :file,
+                           accept: ".pdf,.docx,.txt",
+                           data: { "upload-target": "fileInput",
+                                   action: "change->upload#fileSelected" },
+                           class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" %>
+        </div>
+      </div>
+      <div data-upload-target="preview" class="hidden mt-3 flex items-center gap-2 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Archivo seleccionado:</span>
+        <span data-upload-target="filename" class="font-medium"></span>
+      </div>
+    </div>
+
+    <%= f.submit "Subir Documento",
+                 class: "w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium" %>
+  <% end %>
+</div>

@@ -1,0 +1,11 @@
+<%# local: document %>
+<tr id="<%= dom_id(document) %>" class="border-b border-gray-100 hover:bg-gray-50">
+  <td class="py-3 px-4 font-medium text-gray-900"><%= document.title %></td>
+  <td class="py-3 px-4 text-gray-600"><%= document.doc_type.humanize %></td>
+  <td class="py-3 px-4">
+    <span class="<%= status_badge_classes(document.status) %> text-xs px-2 py-0.5 rounded-full"><%= document.status.humanize %></span>
+  </td>
+  <td class="py-3 px-4 text-gray-500"><%= document.chunks_count %></td>
+  <td class="py-3 px-4 text-gray-500"><%= document.uploaded_by.display_name %></td>
+  <td class="py-3 px-4 text-gray-500"><%= l(document.created_at, format: :short) %></td>
+</tr>

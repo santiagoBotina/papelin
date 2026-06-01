@@ -1,0 +1,49 @@
+<% content_for :title, @conversation.title.presence || "Conversación" %>
+
+<%= turbo_stream_from "conversation_#{@conversation.id}" %>
+
+<div class="flex flex-col h-[calc(100vh-12rem)]">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900">
+        <%= @conversation.title.presence || "Nueva conversación" %>
+      </h1>
+      <p class="text-sm text-gray-500">
+        <%= l(@conversation.created_at, format: :long) %>
+      </p>
+    </div>
+    <%= link_to conversations_path, class: "text-sm text-gray-500 hover:text-gray-700" do %>
+      &larr; Volver
+    <% end %>
+  </div>
+
+  <!-- Messages -->
+  <div id="messages"
+       data-controller="chat"
+       data-chat-target="messages"
+       class="flex-1 overflow-y-auto px-2 py-4 space-y-4">
+    <%= render @conversation.messages.visible %>
+  </div>
+
+  <!-- Input form -->
+  <div class="border-t border-gray-200 pt-4 mt-4">
+    <%= form_with url: conversation_messages_path(@conversation),
+                  data: { controller: "chat",
+                          action: "submit->chat#disableSubmit turbo:submit-end->chat#enableSubmit",
+                          turbo_frame: "_top" },
+                  class: "flex gap-3 items-end" do |f| %>
+      <div class="flex-1">
+        <%= f.text_area :content,
+                        data: { "chat-target": "input" },
+                        placeholder: "Escribe tu mensaje...",
+                        class: "w-full rounded-lg border border-gray-300 p-3 resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm",
+                        rows: 2,
+                        required: true %>
+      </div>
+      <%= f.submit "Enviar",
+                   data: { "chat-target": "submit" },
+                   class: "px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium" %>
+    <% end %>
+  </div>
+</div>

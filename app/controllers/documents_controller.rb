@@ -1,0 +1,45 @@
+# frozen_string_literal: true
+
+class DocumentsController < ApplicationController
+  def index
+    @documents = policy_scope(Document).recent
+    render plain: 'placeholder'
+  end
+
+  def show
+    @document = Document.find(params[:id])
+    authorize @document
+    render plain: 'placeholder'
+  end
+
+  def new
+    @document = Document.new
+    authorize @document
+    render plain: 'placeholder'
+  end
+
+  def create
+    @document = current_user.documents.new(document_params)
+    authorize @document
+
+    if @document.save
+      Documents::IngestJob.perform_later(@document.id)
+      redirect_to documents_path, notice: 'Document uploaded and processing.'
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @document = Document.find(params[:id])
+    authorize @document
+    @document.destroy!
+    redirect_to documents_path, notice: 'Document deleted.'
+  end
+
+  private
+
+  def document_params
+    params.require(:document).permit(:title, :description, :doc_type, :file)
+  end
+end

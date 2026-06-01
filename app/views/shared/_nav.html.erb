@@ -1,0 +1,22 @@
+<nav class="bg-gray-900 text-white">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <%= link_to "Certificate Assistant", root_path, class: "text-lg font-semibold tracking-tight" %>
+    </div>
+    <div class="flex items-center gap-4 text-sm">
+      <% if user_signed_in? %>
+        <%= link_to "Mis Conversaciones", conversations_path, class: "hover:text-gray-300 transition-colors" %>
+        <%= link_to "Documentos", documents_path, class: "hover:text-gray-300 transition-colors" %>
+        <% if current_user.admin? %>
+          <%= link_to "Admin", admin_root_path, class: "hover:text-gray-300 transition-colors" %>
+        <% end %>
+        <span class="text-gray-400">|</span>
+        <span class="text-gray-300"><%= current_user.display_name %></span>
+        <%= button_to "Cerrar Sesión", destroy_user_session_path, method: :delete,
+                      class: "bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-lg transition-colors" %>
+      <% else %>
+        <%= link_to "Iniciar Sesión", new_user_session_path, class: "bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-lg transition-colors" %>
+      <% end %>
+    </div>
+  </div>
+</nav>

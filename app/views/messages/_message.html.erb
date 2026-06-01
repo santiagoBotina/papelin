@@ -1,0 +1,26 @@
+<%# local: message %>
+<div id="<%= dom_id(message) %>"
+     class="flex <%= message.user? ? 'justify-end' : 'justify-start' %>">
+  <div class="max-w-[75%] rounded-2xl px-4 py-3
+              <%= message.user? ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-800' %>">
+
+    <% if message.assistant? %>
+      <div class="text-xs text-gray-400 mb-1 font-medium">Asistente de Certificados</div>
+    <% end %>
+
+    <div id="<%= "#{dom_id(message)}_content" %>" class="prose prose-sm max-w-none">
+      <% if message.pending? || message.streaming? %>
+        <%= render "messages/loading" %>
+      <% else %>
+        <%= render_markdown(message.content) %>
+      <% end %>
+    </div>
+
+    <% if message.metadata.present? && message.metadata["sources"].present? %>
+      <div class="mt-2 pt-2 border-t border-gray-100 text-xs text-gray-400">
+        Fuentes: <%= message.metadata["sources"].map { |s| s["title"] }.join(", ") %>
+      </div>
+    <% end %>
+
+  </div>
+</div>

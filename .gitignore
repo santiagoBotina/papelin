@@ -1,7 +1,6 @@
 .idea/
 node_modules/
 .opencode/
-.agents/
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 

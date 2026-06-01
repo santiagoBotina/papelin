@@ -1,0 +1,46 @@
+<% content_for :title, "Usuario: #{@user.display_name}" %>
+
+<div class="max-w-2xl">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-gray-900"><%= @user.display_name %></h1>
+    <div class="flex items-center gap-2">
+      <%= link_to "Editar", edit_admin_user_path(@user), class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" %>
+      <%= link_to "Volver", admin_users_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <dl class="space-y-4">
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">Nombre completo</dt>
+        <dd class="text-sm text-gray-900 font-medium"><%= @user.display_name %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">Email</dt>
+        <dd class="text-sm text-gray-900"><%= @user.email %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">ID Empleado</dt>
+        <dd class="text-sm text-gray-900"><%= @user.employee_id %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">Rol</dt>
+        <dd class="text-sm">
+          <span class="<%= @user.admin? ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600' %> text-xs px-2 py-0.5 rounded-full">
+            <%= @user.role.humanize %>
+          </span>
+        </dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">Miembro desde</dt>
+        <dd class="text-sm text-gray-900"><%= l(@user.created_at, format: :long) %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <%= button_to "Eliminar Usuario", admin_user_path(@user), method: :delete,
+                  data: { turbo_confirm: "¿Estás seguro de eliminar este usuario?" },
+                  class: "text-red-600 hover:text-red-800 text-sm font-medium" %>
+  </div>
+</div>

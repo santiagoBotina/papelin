@@ -1,0 +1,10 @@
+<% content_for :title, "Editar Usuario" %>
+
+<div class="max-w-xl">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-gray-900">Editar Usuario</h1>
+    <%= link_to "Volver", admin_user_path(@user), class: "text-sm text-gray-500 hover:text-gray-700" %>
+  </div>
+
+  <%= render "form", user: @user %>
+</div>

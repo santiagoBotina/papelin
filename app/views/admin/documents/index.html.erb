@@ -1,0 +1,36 @@
+<% content_for :title, "Administrar Documentos" %>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-semibold text-gray-900">Administrar Documentos</h1>
+  <%= link_to "Subir Documento", new_document_path,
+              class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" %>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-gray-200 bg-gray-50">
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Título</th>
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Tipo</th>
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Estado</th>
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Secciones</th>
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Subido por</th>
+        <th class="text-left py-3 px-4 font-medium text-gray-600">Fecha</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @documents.each do |doc| %>
+        <tr class="border-b border-gray-100 hover:bg-gray-50">
+          <td class="py-3 px-4 font-medium text-gray-900"><%= doc.title %></td>
+          <td class="py-3 px-4 text-gray-600"><%= doc.doc_type.humanize %></td>
+          <td class="py-3 px-4">
+            <span class="<%= status_badge_classes(doc.status) %> text-xs px-2 py-0.5 rounded-full"><%= doc.status.humanize %></span>
+          </td>
+          <td class="py-3 px-4 text-gray-500"><%= doc.chunks_count %></td>
+          <td class="py-3 px-4 text-gray-500"><%= doc.uploaded_by.display_name %></td>
+          <td class="py-3 px-4 text-gray-500"><%= l(doc.created_at, format: :short) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
