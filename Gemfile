@@ -39,7 +39,7 @@ gem 'docx'
 gem 'pdf-reader'
 
 # Performance & security
-gem 'pagy', '~> 6.5'
+gem 'pagy', '~> 43.5'
 gem 'rack-attack'
 
 # Markdown rendering (assistant output)
