@@ -1,1 +1,22 @@
 .idea/
+node_modules/
+.opencode/
+.agents/
+# Ignore master key for decrypting credentials and more.
+/config/master.key
+
+/.env
+/.env.*
+!/.env.example
+
+/app/assets/builds/*
+!/app/assets/builds/.keep
+
+/storage/*
+!/storage/.keep
+/tmp/*
+!/tmp/.keep
+!/tmp/pids
+!/tmp/pids/.keep
+/log/*
+!/log/.keep

@@ -1,0 +1,47 @@
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-performance
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.3
+  Exclude:
+    - "db/schema.rb"
+    - "db/migrate/**/*"
+    - "bin/**/*"
+    - "vendor/**/*"
+    - "node_modules/**/*"
+    - "coverage/**/*"
+    - "public/**/*"
+    - "storage/**/*"
+    - "tmp/**/*"
+    - "log/**/*"
+    - "app/assets/builds/**/*"
+    - "config/initializers/devise.rb"
+
+Rails:
+  Enabled: true
+
+RSpec:
+  Enabled: true
+
+Metrics/MethodLength:
+  Max: 20
+
+Metrics/ClassLength:
+  Max: 200
+
+Metrics/BlockLength:
+  Max: 30
+  Exclude:
+    - "spec/**/*"
+    - "config/routes.rb"
+    - "config/environments/**/*"
+    - "db/seeds.rb"
+
+Style/Documentation:
+  Enabled: false
+
+Rails/FilePath:
+  EnforcedStyle: arguments

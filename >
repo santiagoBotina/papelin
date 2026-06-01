@@ -1,0 +1,11 @@
+openai:
+  api_key: sk-replace-me
+
+redis:
+  url: redis://localhost:6379/0
+
+active_storage:
+  aws_access_key_id: YOUR_KEY
+  aws_secret_access_key: YOUR_SECRET
+  aws_bucket: your-bucket-name
+  aws_region: us-east-1
