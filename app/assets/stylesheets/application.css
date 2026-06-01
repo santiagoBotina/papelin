@@ -252,6 +252,35 @@ body {
 }
 .pipelin-logo span { color: #7c3aed; }
 
+/* ---------- Chat page layout ---------- */
+
+/* Applied to <main> on the chat page via content_for :main_class */
+.main-chat {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* The inner wrapper that centers and constrains the chat column */
+.chat-inner {
+  flex: 1;
+  min-height: 0;          /* critical — without this flex children won't shrink */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 720px;       /* readable column, not full-bleed */
+  margin: 0 auto;
+  padding: 20px 24px 16px;
+}
+
+/* The root div of the chat view */
+.chat-root {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ---------- Scroll hint for chat ---------- */
 .messages-scroll {
   scrollbar-width: thin;

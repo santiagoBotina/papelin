@@ -13,11 +13,14 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="min-h-screen bg-white">
+  <body class="h-screen overflow-hidden bg-white flex flex-col">
     <%= render "shared/nav" %>
-    <main class="max-w-6xl mx-auto px-5 py-10">
-      <%= render "shared/flash" %>
-      <%= yield %>
+    <%# flex-1 + min-h-0 lets this shrink below content size so only the inner scroll target scrolls %>
+    <main class="flex-1 overflow-y-auto <%= yield :main_class %>">
+      <div class="<%= content_for?(:main_inner) ? yield(:main_inner) : 'max-w-6xl mx-auto px-5 py-10' %>">
+        <%= render "shared/flash" %>
+        <%= yield %>
+      </div>
     </main>
   </body>
 </html>
