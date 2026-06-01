@@ -5,9 +5,12 @@ class MessagesController < ApplicationController
     @conversation = Conversation.find(params[:conversation_id])
     authorize @conversation
 
+    content = message_params[:content].to_s.strip
+    return redirect_to @conversation if content.blank?
+
     @user_message = @conversation.messages.create!(
       role: :user,
-      content: message_params[:content],
+      content: content,
       status: :completed
     )
 
@@ -17,7 +20,22 @@ class MessagesController < ApplicationController
       status: :pending
     )
 
-    Rag::QueryJob.perform_later(@assistant_message.id, message_params[:content])
+    # Broadcast both messages immediately so the UI updates before the job finishes
+    stream_name = "conversation_#{@conversation.id}"
+    Turbo::StreamsChannel.broadcast_append_to(
+      stream_name,
+      target: 'messages',
+      partial: 'messages/message',
+      locals: { message: @user_message }
+    )
+    Turbo::StreamsChannel.broadcast_append_to(
+      stream_name,
+      target: 'messages',
+      partial: 'messages/message',
+      locals: { message: @assistant_message }
+    )
+
+    Rag::QueryJob.perform_later(@assistant_message.id, content)
 
     redirect_to @conversation
   end

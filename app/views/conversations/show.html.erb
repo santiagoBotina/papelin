@@ -47,6 +47,7 @@
   <%# Input area %>
   <div class="pt-4" style="border-top: 1px solid #f4f4f5;">
     <%= form_with url: conversation_messages_path(@conversation),
+                  scope: :message,
                   data: { controller: "chat",
                           action: "submit->chat#disableSubmit turbo:submit-end->chat#enableSubmit",
                           turbo_frame: "_top" } do |f| %>

@@ -24,9 +24,23 @@ module Rag
         assistant_message: message
       )
 
-      unless result.success?
+      if result.success?
+        # Broadcast the completed assistant message, replacing the loading bubble
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "conversation_#{conversation.id}",
+          target: ActionView::RecordIdentifier.dom_id(message),
+          partial: 'messages/message',
+          locals: { message: message.reload }
+        )
+      else
         Rails.logger.error "Rag::QueryJob failed for message #{assistant_message_id}: #{result.error}"
-        # QueryService already marked the message as :failed
+        # Broadcast the failed state too so the UI updates
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "conversation_#{conversation.id}",
+          target: ActionView::RecordIdentifier.dom_id(message),
+          partial: 'messages/message',
+          locals: { message: message.reload }
+        )
       end
     rescue ActiveRecord::RecordNotFound
       Rails.logger.warn "Rag::QueryJob: message #{assistant_message_id} not found, skipping"
