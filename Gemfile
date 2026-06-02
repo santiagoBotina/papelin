@@ -24,7 +24,7 @@ gem 'pundit'
 
 # AI / Vector
 gem 'neighbor'
-gem 'ruby-openai', '~> 7.0'
+gem 'ruby-openai', '~> 8.3'
 
 # File uploads
 gem 'active_storage_validations'

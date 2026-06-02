@@ -162,7 +162,7 @@ GEM
       logger
     faraday-multipart (1.2.0)
       multipart-post (~> 2.0)
-    faraday-net_http (3.4.3)
+    faraday-net_http (3.4.4)
       net-http (~> 0.5)
     fugit (1.12.2)
       et-orbi (~> 1.4)
@@ -378,7 +378,7 @@ GEM
     rubocop-rspec (3.9.0)
       lint_roller (~> 1.1)
       rubocop (~> 1.81)
-    ruby-openai (7.4.0)
+    ruby-openai (8.3.0)
       event_stream_parser (>= 0.3.0, < 2.0.0)
       faraday (>= 1)
       faraday-multipart (>= 1)
@@ -501,7 +501,7 @@ DEPENDENCIES
   rubocop-performance
   rubocop-rails
   rubocop-rspec
-  ruby-openai (~> 7.0)
+  ruby-openai (~> 8.3)
   shoulda-matchers
   sidekiq (~> 7.0)
   sidekiq-cron
