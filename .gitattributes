@@ -1,0 +1,2 @@
+*.erb linguist-language=Ruby
+coverage/* linguist-generated=true
