@@ -2,7 +2,7 @@
 
 module Admin
   class CertificateRequestsController < BaseController
-    before_action :set_certificate_request, only: [:show, :update]
+    before_action :set_certificate_request, only: %i[show update]
 
     def index
       @user = User.find(params[:user_id]) if params[:user_id]
@@ -21,9 +21,9 @@ module Admin
       @certificate_request.assign_attributes(status: status) if status.present?
 
       if @certificate_request.save
-        redirect_to admin_certificate_request_path(@certificate_request), notice: "Certificado actualizado."
+        redirect_to admin_certificate_request_path(@certificate_request), notice: 'Certificado actualizado.'
       else
-        render :show, status: :unprocessable_entity
+        render :show, status: :unprocessable_content
       end
     end
 

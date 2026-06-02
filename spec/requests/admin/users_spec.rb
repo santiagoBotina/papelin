@@ -24,7 +24,9 @@ RSpec.describe 'Admin::Users', type: :request do
     end
 
     it 'redirects to sign in for POST /admin/users' do
-      post admin_users_path, params: { user: { email: 'test@example.com', password: 'Password1!', first_name: 'Test', last_name: 'User', employee_id: 'EMP001' } }
+      post admin_users_path,
+           params: { user: { email: 'test@example.com', password: 'Password1!', first_name: 'Test', last_name: 'User',
+                             employee_id: 'EMP001' } }
       expect(response).to redirect_to(new_user_session_path)
     end
 
@@ -61,7 +63,9 @@ RSpec.describe 'Admin::Users', type: :request do
     end
 
     it 'redirects with error for POST /admin/users' do
-      post admin_users_path, params: { user: { email: 'test@example.com', password: 'Password1!', first_name: 'Test', last_name: 'User', employee_id: 'EMP001' } }
+      post admin_users_path,
+           params: { user: { email: 'test@example.com', password: 'Password1!', first_name: 'Test', last_name: 'User',
+                             employee_id: 'EMP001' } }
       expect(response).to redirect_to(root_path)
       expect(flash[:error]).to be_present
     end

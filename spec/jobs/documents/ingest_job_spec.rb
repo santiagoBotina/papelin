@@ -21,7 +21,7 @@ RSpec.describe Documents::IngestJob, type: :job do
 
     allow(Documents::TextExtractorService).to receive(:call).and_return(
       instance_double(
-        'Documents::TextExtractorService::Result',
+        Documents::TextExtractorService::Result,
         success?: true, text: 'Extracted text content', error: nil
       )
     )
@@ -31,7 +31,7 @@ RSpec.describe Documents::IngestJob, type: :job do
     )
     allow(Documents::EmbedService).to receive(:call).and_return(
       instance_double(
-        'Documents::EmbedService::Result',
+        Documents::EmbedService::Result,
         success?: true,
         chunks: [{ document_id: document.id, content: 'chunk text', chunk_index: 0,
                    metadata: '{}', embedding: Array.new(1536, 0.0),
@@ -78,7 +78,7 @@ RSpec.describe Documents::IngestJob, type: :job do
       before do
         allow(Documents::TextExtractorService).to receive(:call).and_return(
           instance_double(
-            'Documents::TextExtractorService::Result',
+            Documents::TextExtractorService::Result,
             success?: false, text: nil, error: 'PDF parsing error'
           )
         )
@@ -104,7 +104,7 @@ RSpec.describe Documents::IngestJob, type: :job do
       before do
         allow(Documents::EmbedService).to receive(:call).and_return(
           instance_double(
-            'Documents::EmbedService::Result',
+            Documents::EmbedService::Result,
             success?: false, chunks: nil, error: 'OpenAI rate limited'
           )
         )

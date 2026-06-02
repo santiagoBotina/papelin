@@ -10,18 +10,18 @@ Rails.application.routes.draw do
   root 'conversations#index'
   get 'dashboard' => 'conversations#index', as: :authenticated_root
 
-  resources :conversations, only: [:index, :show, :create, :destroy] do
+  resources :conversations, only: %i[index show create destroy] do
     resources :messages, only: [:create]
   end
 
-  resources :documents, only: [:index, :show, :new, :create, :destroy]
+  resources :documents, only: %i[index show new create destroy]
 
-  resources :certificate_requests, only: [:index, :show]
+  resources :certificate_requests, only: %i[index show]
 
   namespace :admin do
     root 'dashboard#show'
-    resources :documents, only: [:index, :show, :destroy]
-    resources :users, only: [:index, :show, :new, :create, :edit, :update, :destroy]
-    resources :certificate_requests, only: [:index, :show, :update]
+    resources :documents, only: %i[index show destroy]
+    resources :users, only: %i[index show new create edit update destroy]
+    resources :certificate_requests, only: %i[index show update]
   end
 end

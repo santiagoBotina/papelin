@@ -8,7 +8,7 @@ class User < ApplicationRecord
 
   has_many :conversations, dependent: :destroy
   has_many :documents, foreign_key: :uploaded_by_id, dependent: :nullify,
-           inverse_of: :uploaded_by
+                       inverse_of: :uploaded_by
   has_many :certificate_requests, dependent: :nullify
 
   validates :first_name,  presence: true

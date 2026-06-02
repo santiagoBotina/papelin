@@ -3,95 +3,95 @@
 # Idempotent seeds — safe to run multiple times.
 # Run with: rails db:seed
 
-puts "Seeding database..."
+Rails.logger.debug 'Seeding database...'
 
 # ─── Users ───────────────────────────────────────────────────────────────────
 
-admin = User.find_or_create_by!(email: "admin@example.com") do |u|
-  u.first_name = "Admin"
-  u.last_name  = "User"
-  u.employee_id = "EMP00001"
-  u.password   = "Password1!"
+admin = User.find_or_create_by!(email: 'admin@example.com') do |u|
+  u.first_name = 'Admin'
+  u.last_name  = 'User'
+  u.employee_id = 'EMP00001'
+  u.password   = 'Password1!'
   u.role       = :admin
 end
-puts "  Admin user: #{admin.email} / Password1!"
+Rails.logger.debug { "  Admin user: #{admin.email} / Password1!" }
 
-employee1 = User.find_or_create_by!(email: "alice@example.com") do |u|
-  u.first_name = "Alice"
-  u.last_name  = "Johnson"
-  u.employee_id = "EMP00002"
-  u.password   = "Password1!"
+employee1 = User.find_or_create_by!(email: 'alice@example.com') do |u|
+  u.first_name = 'Alice'
+  u.last_name  = 'Johnson'
+  u.employee_id = 'EMP00002'
+  u.password   = 'Password1!'
   u.role       = :employee
 end
-puts "  Employee:   #{employee1.email} / Password1!"
+Rails.logger.debug { "  Employee:   #{employee1.email} / Password1!" }
 
-employee2 = User.find_or_create_by!(email: "bob@example.com") do |u|
-  u.first_name = "Bob"
-  u.last_name  = "Smith"
-  u.employee_id = "EMP00003"
-  u.password   = "Password1!"
+employee2 = User.find_or_create_by!(email: 'bob@example.com') do |u|
+  u.first_name = 'Bob'
+  u.last_name  = 'Smith'
+  u.employee_id = 'EMP00003'
+  u.password   = 'Password1!'
   u.role       = :employee
 end
-puts "  Employee:   #{employee2.email} / Password1!"
+Rails.logger.debug { "  Employee:   #{employee2.email} / Password1!" }
 
 # ─── Documents (no real file attached — status set directly for local testing) ─
 
-doc_policy = Document.find_or_create_by!(title: "HR Policy Manual") do |d|
+doc_policy = Document.find_or_create_by!(title: 'HR Policy Manual') do |d|
   d.uploaded_by = admin
-  d.description = "Comprehensive HR policies covering leave, conduct, and benefits."
+  d.description = 'Comprehensive HR policies covering leave, conduct, and benefits.'
   d.doc_type    = :policy
   d.status      = :ready
 end
 
-doc_procedure = Document.find_or_create_by!(title: "Payroll Certificate Procedure") do |d|
+doc_procedure = Document.find_or_create_by!(title: 'Payroll Certificate Procedure') do |d|
   d.uploaded_by = admin
-  d.description = "Step-by-step instructions for requesting a payroll certificate."
+  d.description = 'Step-by-step instructions for requesting a payroll certificate.'
   d.doc_type    = :procedure
   d.status      = :ready
 end
 
-doc_faq = Document.find_or_create_by!(title: "Certificates FAQ") do |d|
+doc_faq = Document.find_or_create_by!(title: 'Certificates FAQ') do |d|
   d.uploaded_by = admin
-  d.description = "Frequently asked questions about labor, payroll, and employment certificates."
+  d.description = 'Frequently asked questions about labor, payroll, and employment certificates.'
   d.doc_type    = :faq
   d.status      = :ready
 end
 
-Document.find_or_create_by!(title: "Employment Letter Template") do |d|
+Document.find_or_create_by!(title: 'Employment Letter Template') do |d|
   d.uploaded_by = admin
-  d.description = "Standard template used to generate employment letters."
+  d.description = 'Standard template used to generate employment letters.'
   d.doc_type    = :template
   d.status      = :pending
 end
 
-Document.find_or_create_by!(title: "Benefits Handbook 2024") do |d|
+Document.find_or_create_by!(title: 'Benefits Handbook 2024') do |d|
   d.uploaded_by = admin
-  d.description = "Full benefits handbook — failed ingestion for testing error state."
+  d.description = 'Full benefits handbook — failed ingestion for testing error state.'
   d.doc_type    = :policy
   d.status      = :failed
-  d.processing_error = "PDF parsing failed: unexpected EOF at byte 142300"
+  d.processing_error = 'PDF parsing failed: unexpected EOF at byte 142300'
 end
 
-puts "  #{Document.count} documents seeded"
+Rails.logger.debug { "  #{Document.count} documents seeded" }
 
 # ─── Document Chunks (minimal — enough to exercise RAG retrieval) ────────────
 
 [doc_policy, doc_procedure, doc_faq].each_with_index do |doc, doc_idx|
   3.times do |i|
     DocumentChunk.find_or_create_by!(document: doc, chunk_index: i) do |c|
-      c.content  = "This is chunk #{i + 1} of '#{doc.title}'. " \
-                   "It contains sample text about certificate processes, payroll documentation, " \
-                   "and HR policies. Employees should submit their requests via the HR portal " \
-                   "with valid employee ID and supporting documents."
+      c.content = "This is chunk #{i + 1} of '#{doc.title}'. " \
+                  'It contains sample text about certificate processes, payroll documentation, ' \
+                  'and HR policies. Employees should submit their requests via the HR portal ' \
+                  'with valid employee ID and supporting documents.'
       # Fake normalized embedding — all equal values will not give useful cosine similarity
       # but allow the vector column to be populated without calling OpenAI.
-      c.embedding = Array.new(1536) { ((doc_idx * 3 + i + 1) * 0.001).round(4) }
+      c.embedding = Array.new(1536) { (((doc_idx * 3) + i + 1) * 0.001).round(4) }
       c.metadata  = { source: doc.title, page: i + 1 }
     end
   end
 end
 
-puts "  #{DocumentChunk.count} document chunks seeded"
+Rails.logger.debug { "  #{DocumentChunk.count} document chunks seeded" }
 
 # ─── Certificate Requests ─────────────────────────────────────────────────────
 
@@ -101,7 +101,7 @@ cr1 = CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current
   r.status           = :submitted
   r.requested_at     = 3.days.ago
   r.expected_ready_at = 2.days.from_now
-  r.notes            = "Needed for bank loan application."
+  r.notes            = 'Needed for bank loan application.'
 end
 
 cr2 = CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current.year}-00002") do |r|
@@ -111,7 +111,7 @@ cr2 = CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current
   r.requested_at     = 10.days.ago
   r.expected_ready_at = 5.days.ago
   r.ready_at         = 4.days.ago
-  r.notes            = "Required by visa application."
+  r.notes            = 'Required by visa application.'
 end
 
 cr3 = CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current.year}-00003") do |r|
@@ -119,8 +119,8 @@ cr3 = CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current
   r.cert_type        = :labor
   r.status           = :submitted
   r.requested_at     = 15.days.ago
-  r.expected_ready_at = 10.days.ago  # overdue
-  r.notes            = "Overdue request for testing."
+  r.expected_ready_at = 10.days.ago # overdue
+  r.notes            = 'Overdue request for testing.'
 end
 
 CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current.year}-00004") do |r|
@@ -136,74 +136,76 @@ CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current.year}
   r.cert_type        = :other
   r.status           = :rejected
   r.requested_at     = 20.days.ago
-  r.notes            = "Rejected — insufficient documentation."
+  r.notes            = 'Rejected — insufficient documentation.'
 end
 
-puts "  #{CertificateRequest.count} certificate requests seeded"
+Rails.logger.debug { "  #{CertificateRequest.count} certificate requests seeded" }
 
 # ─── Conversations & Messages ─────────────────────────────────────────────────
 
-conv1 = Conversation.find_or_create_by!(title: "Payroll certificate inquiry", user: employee1) do |c|
+conv1 = Conversation.find_or_create_by!(title: 'Payroll certificate inquiry', user: employee1) do |c|
   c.status = :active
 end
 
 unless conv1.messages.exists?
   conv1.messages.create!(role: :user, status: :completed,
-    content: "What documents do I need for a payroll certificate?")
+                         content: 'What documents do I need for a payroll certificate?')
   conv1.messages.create!(role: :assistant, status: :completed,
-    content: "To request a **payroll certificate** you typically need:\n\n" \
-             "1. A completed request form submitted via the HR portal\n" \
-             "2. Your employee ID number\n" \
-             "3. The purpose of the certificate (e.g. bank loan, visa)\n\n" \
-             "Processing usually takes 3–5 business days.",
-    metadata: { "sources" => [{ "title" => "Payroll Certificate Procedure", "chunk_id" => 1 }] })
+                         content: "To request a **payroll certificate** you typically need:\n\n" \
+                                  "1. A completed request form submitted via the HR portal\n" \
+                                  "2. Your employee ID number\n" \
+                                  "3. The purpose of the certificate (e.g. bank loan, visa)\n\n" \
+                                  'Processing usually takes 3–5 business days.',
+                         metadata: { 'sources' => [{ 'title' => 'Payroll Certificate Procedure', 'chunk_id' => 1 }] })
   conv1.messages.create!(role: :user, status: :completed,
-    content: "What is the status of my current requests?")
+                         content: 'What is the status of my current requests?')
   conv1.messages.create!(role: :assistant, status: :completed,
-    content: "You have **2 active certificate requests**:\n\n" \
-             "- `#{cr1.reference_number}` — Payroll certificate, **Submitted**, expected #{cr1.expected_ready_at&.strftime('%b %d')}\n" \
-             "- `#{cr3.reference_number}` — Labor certificate, **Submitted** (overdue)\n\n" \
-             "Your employment certificate (`#{cr2.reference_number}`) is **Ready for download**.")
+                         content: "You have **2 active certificate requests**:\n\n" \
+                                  "- `#{cr1.reference_number}` — Payroll certificate, **Submitted**, expected #{cr1.expected_ready_at&.strftime('%b %d')}\n" \
+                                  "- `#{cr3.reference_number}` — Labor certificate, **Submitted** (overdue)\n\n" \
+                                  "Your employment certificate (`#{cr2.reference_number}`) is **Ready for download**.")
 end
 
-conv2 = Conversation.find_or_create_by!(title: "Benefits questions", user: employee1) do |c|
+conv2 = Conversation.find_or_create_by!(title: 'Benefits questions', user: employee1) do |c|
   c.status = :archived
 end
 
 unless conv2.messages.exists?
   conv2.messages.create!(role: :user, status: :completed,
-    content: "Where can I find the benefits handbook?")
+                         content: 'Where can I find the benefits handbook?')
   conv2.messages.create!(role: :assistant, status: :completed,
-    content: "The **Benefits Handbook 2024** is available in the Documents section. " \
-             "It covers health insurance, vacation policy, and retirement plans.")
+                         content: 'The **Benefits Handbook 2024** is available in the Documents section. ' \
+                                  'It covers health insurance, vacation policy, and retirement plans.')
 end
 
-conv3 = Conversation.find_or_create_by!(title: "Employment letter process", user: employee2) do |c|
+conv3 = Conversation.find_or_create_by!(title: 'Employment letter process', user: employee2) do |c|
   c.status = :active
 end
 
 unless conv3.messages.exists?
   conv3.messages.create!(role: :user, status: :completed,
-    content: "How long does it take to get an employment letter?")
+                         content: 'How long does it take to get an employment letter?')
   conv3.messages.create!(role: :assistant, status: :completed,
-    content: "Employment letters are typically ready within **2–3 business days** " \
-             "after submitting your request through the HR portal.")
+                         content: 'Employment letters are typically ready within **2–3 business days** ' \
+                                  'after submitting your request through the HR portal.')
 end
 
-puts "  #{Conversation.count} conversations, #{Message.count} messages seeded"
+Rails.logger.debug { "  #{Conversation.count} conversations, #{Message.count} messages seeded" }
 
 # ─── Summary ──────────────────────────────────────────────────────────────────
 
-puts ""
-puts "Done! Seed data summary:"
-puts "  Users:                #{User.count}  (1 admin, #{User.employee.count} employees)"
-puts "  Documents:            #{Document.count}  (#{Document.ready.count} ready, #{Document.pending.count} pending, #{Document.failed.count} failed)"
-puts "  Document chunks:      #{DocumentChunk.count}"
-puts "  Certificate requests: #{CertificateRequest.count}"
-puts "  Conversations:        #{Conversation.count}"
-puts "  Messages:             #{Message.count}"
-puts ""
-puts "Login credentials:"
-puts "  admin@example.com  / Password1!  (admin)"
-puts "  alice@example.com  / Password1!  (employee — has requests & conversations)"
-puts "  bob@example.com    / Password1!  (employee)"
+Rails.logger.debug ''
+Rails.logger.debug 'Done! Seed data summary:'
+Rails.logger.debug { "  Users:                #{User.count}  (1 admin, #{User.employee.count} employees)" }
+Rails.logger.debug do
+  "  Documents:            #{Document.count}  (#{Document.ready.count} ready, #{Document.pending.count} pending, #{Document.failed.count} failed)"
+end
+Rails.logger.debug { "  Document chunks:      #{DocumentChunk.count}" }
+Rails.logger.debug { "  Certificate requests: #{CertificateRequest.count}" }
+Rails.logger.debug { "  Conversations:        #{Conversation.count}" }
+Rails.logger.debug { "  Messages:             #{Message.count}" }
+Rails.logger.debug ''
+Rails.logger.debug 'Login credentials:'
+Rails.logger.debug '  admin@example.com  / Password1!  (admin)'
+Rails.logger.debug '  alice@example.com  / Password1!  (employee — has requests & conversations)'
+Rails.logger.debug '  bob@example.com    / Password1!  (employee)'

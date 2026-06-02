@@ -23,7 +23,7 @@ class DocumentsController < ApplicationController
       Documents::IngestJob.perform_later(@document.id)
       redirect_to documents_path, notice: 'Document uploaded and processing.'
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 

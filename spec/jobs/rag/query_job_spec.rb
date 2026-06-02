@@ -17,7 +17,7 @@ RSpec.describe Rag::QueryJob, type: :job do
 
     allow(Rag::QueryService).to receive(:call).and_return(
       instance_double(
-        'Rag::QueryService::Result',
+        Rag::QueryService::Result,
         success?: true,
         message: assistant_message,
         error: nil
@@ -56,7 +56,7 @@ RSpec.describe Rag::QueryJob, type: :job do
       before do
         allow(Rag::QueryService).to receive(:call).and_return(
           instance_double(
-            'Rag::QueryService::Result',
+            Rag::QueryService::Result,
             success?: false,
             message: nil,
             error: 'OpenAI timeout'

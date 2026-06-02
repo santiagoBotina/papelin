@@ -45,10 +45,10 @@ RSpec.describe 'Messages', type: :request do
         expect do
           post conversation_messages_path(conversation), params: valid_params
           assistant_message = conversation.messages.where(role: :assistant).last
-        end.to have_enqueued_job(Rag::QueryJob).with { |msg_id, content|
+        end.to(have_enqueued_job(Rag::QueryJob).with do |msg_id, content|
           expect(msg_id).to eq(assistant_message&.id)
           expect(content).to eq('What documents do I need?')
-        }
+        end)
       end
 
       context 'with empty content' do
