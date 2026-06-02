@@ -1,29 +1,29 @@
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: certificate_assistant_postgres
+    container_name: papelin_postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: certificate_assistant_development
+      POSTGRES_DB: papelin_dev
     ports:
       - "5432:5432"
     volumes:
-      - certificate_assistant_pgdata:/var/lib/postgresql/data
+      - papelin_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d certificate_assistant_development"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d papelin_dev"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: certificate_assistant_redis
+    container_name: papelin_redis
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
     volumes:
-      - certificate_assistant_redisdata:/data
+      - papelin_redisdata:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -32,7 +32,7 @@ services:
 
   localstack:
     image: localstack/localstack:3
-    container_name: certificate_assistant_localstack
+    container_name: papelin_localstack
     ports:
       - "4566:4566"
     environment:
@@ -41,7 +41,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
       - LOCALSTACK_HOST=localhost
     volumes:
-      - certificate_assistant_localstack_data:/var/lib/localstack
+      - papelin_localstack_data:/var/lib/localstack
       - ./bin/localstack_init.sh:/etc/localstack/init/ready.d/init.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health | grep -q '\"s3\"'"]
@@ -50,6 +50,6 @@ services:
       retries: 10
 
 volumes:
-  certificate_assistant_pgdata:
-  certificate_assistant_redisdata:
-  certificate_assistant_localstack_data:
+  papelin_pgdata:
+  papelin_redisdata:
+  papelin_localstack_data:

@@ -7,7 +7,7 @@ module Rag
     MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * 4
 
     SYSTEM_PROMPT = <<~PROMPT
-      Eres Pipelin, un asistente interno de RRHH para empleados de la empresa.
+      Eres Papelin, un asistente interno de RRHH para empleados de la empresa.
       Tu función es responder preguntas sobre solicitudes de certificados (certificados de nómina,
       certificados laborales, cartas de empleo, etc.) y procesos internos de RRHH.
 
