@@ -22,6 +22,7 @@ class CertificateRequest < ApplicationRecord
   validates :cert_type,        presence: true
   validates :requested_at,     presence: true
   validates :reference_number, presence: true, uniqueness: true
+  validates :admin_notes,      length: { maximum: 1000 }, allow_blank: true
   # `belongs_to :user` adds an implicit presence validation; we keep an
   # explicit `validates :user, presence: true` removed to avoid the
   # Rails/RedundantPresenceValidationOnBelongsTo cop.

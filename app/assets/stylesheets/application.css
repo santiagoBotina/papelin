@@ -95,6 +95,7 @@ body {
   border: 1px solid #e4e4e7;
 }
 .btn-ghost:hover { background: #f8f8f9; color: #18181b; border-color: #d4d4d8; }
+.btn-ghost[style*="color:#e11d48"]:hover { background: #fff1f2; border-color: #fecdd3; }
 
 .btn-sm { padding: 5px 12px; font-size: 12.5px; border-radius: 7px; }
 .btn-lg { padding: 11px 22px; font-size: 14.5px; }
@@ -231,6 +232,93 @@ body {
 .empty-state-title { font-size: 15px; font-weight: 500; color: #52525b; margin-bottom: 6px; }
 .empty-state-desc  { font-size: 13.5px; color: #a1a1aa; margin-bottom: 20px; }
 
+/* ---------- Empty certificate state (admin) ---------- */
+.empty-certificate {
+  text-align: center;
+  padding: 32px 24px;
+  border: 1.5px dashed #d4d4d8;
+  border-radius: 12px;
+  background: #fafafa;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.empty-certificate:hover {
+  border-color: #c4b5fd;
+  background: #faf8ff;
+}
+.empty-certificate-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  background: #f5f3ff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7c3aed;
+}
+.empty-certificate-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.empty-certificate-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-style: italic;
+  color: #18181b;
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+.empty-certificate-desc {
+  font-size: 13px;
+  color: #71717a;
+  line-height: 1.55;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+/* ---------- Form extras ---------- */
+.readonly-input {
+  background: #f8f8f9 !important;
+  color: #a1a1aa !important;
+  cursor: not-allowed !important;
+}
+
+/* Custom checkbox toggle */
+.toggle-checkbox {
+  appearance: none;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: #d4d4d8;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+}
+.toggle-checkbox::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+  transition: transform 0.2s ease;
+}
+.toggle-checkbox:checked {
+  background: #7c3aed;
+}
+.toggle-checkbox:checked::after {
+  transform: translateX(16px);
+}
+.toggle-checkbox:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 2px;
+}
+
 /* ---------- Stat card ---------- */
 .stat-card { padding: 20px 24px; }
 .stat-value {
@@ -255,10 +343,15 @@ body {
 /* ---------- Chat page layout ---------- */
 
 /* Applied to <main> on the chat page via content_for :main_class */
+/* min-height:0 is critical — it lets this flex child shrink below its
+   natural content height so overflow:hidden can clip excess and the
+   inner messages area takes over scrolling. Without it the <body>
+   would grow (min-h-screen on body) and scroll instead. */
 .main-chat {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 
 /* The inner wrapper that centers and constrains the chat column */

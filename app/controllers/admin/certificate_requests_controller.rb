@@ -13,17 +13,13 @@ module Admin
     def show; end
 
     def update
-      if params.dig(:certificate_request, :generated_file).present?
-        @certificate_request.generated_file.attach(params[:certificate_request][:generated_file])
-      end
-
-      status = params.dig(:certificate_request, :status)
-      @certificate_request.assign_attributes(status: status) if status.present?
-
-      if @certificate_request.save
-        redirect_to admin_certificate_request_path(@certificate_request), notice: 'Certificado actualizado.'
+      case params[:update_action]
+      when 'file_upload'
+        handle_file_upload
+      when 'status_update'
+        handle_status_update
       else
-        render :show, status: :unprocessable_content
+        head :bad_request
       end
     end
 
@@ -31,6 +27,50 @@ module Admin
 
     def set_certificate_request
       @certificate_request = CertificateRequest.includes(:user).find(params[:id])
+    end
+
+    def handle_file_upload
+      file = params.dig(:certificate_request, :generated_file)
+      if file.blank?
+        return redirect_to admin_certificate_request_path(@certificate_request),
+                           alert: 'No se seleccion ningn archivo.'
+      end
+
+      @certificate_request.generated_file.purge if @certificate_request.generated_file.attached?
+      @certificate_request.generated_file.attach(file)
+      set_ready_if_marked
+
+      redirect_to admin_certificate_request_path(@certificate_request),
+                  notice: 'Archivo subido correctamente.'
+    end
+
+    def handle_status_update
+      attrs = status_update_params
+      assign_ready_at_on_status_change(attrs)
+
+      if @certificate_request.update(attrs)
+        redirect_to admin_certificate_request_path(@certificate_request),
+                    notice: 'Estado actualizado.'
+      else
+        render :show, status: :unprocessable_content
+      end
+    end
+
+    def set_ready_if_marked
+      return unless params[:mark_ready] == 'true'
+
+      @certificate_request.update!(status: :ready, ready_at: Date.current)
+    end
+
+    def assign_ready_at_on_status_change(attrs)
+      return unless attrs[:status].to_s == 'ready' && @certificate_request.status != 'ready'
+
+      attrs[:ready_at] = Date.current
+    end
+
+    def status_update_params
+      params.require(:certificate_request)
+            .permit(:status, :expected_ready_at, :admin_notes)
     end
   end
 end

@@ -1,1 +1,150 @@
-<%= render plain: "placeholder" %>
+<% content_for :title, "Documento: #{@document.title}" %>
+
+<div class="max-w-2xl">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-900"><%= @document.title %></h1>
+      <p class="text-sm text-gray-500">
+        <%= @document.doc_type.humanize %> —
+        <%= link_to @document.uploaded_by.display_name, admin_user_path(@document.uploaded_by),
+              class: "text-purple-600 hover:text-purple-800" %>
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <%= link_to "Editar documento", edit_admin_document_path(@document),
+                  class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" %>
+      <%= link_to "← Volver", admin_documents_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
+    </div>
+  </div>
+
+  <!-- Details card -->
+  <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">Detalles</h2>
+    <dl class="space-y-3">
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Estado</dt>
+        <dd>
+          <span class="<%= status_badge_classes(@document.status) %> text-xs px-2 py-0.5 rounded-full"><%= @document.status.humanize %></span>
+        </dd>
+      </div>
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Título</dt>
+        <dd class="text-gray-900 font-medium"><%= @document.title %></dd>
+      </div>
+      <% if @document.description.present? %>
+        <div class="flex justify-between text-sm">
+          <dt class="text-gray-500">Descripción</dt>
+          <dd class="text-gray-700 max-w-xs text-right"><%= @document.description %></dd>
+        </div>
+      <% end %>
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Tipo de documento</dt>
+        <dd class="text-gray-900"><%= @document.doc_type.humanize %></dd>
+      </div>
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Tipo de certificado</dt>
+        <dd class="text-gray-900">
+          <% if @document.cert_type.present? %>
+            <span class="bg-violet-100 text-violet-700 text-xs px-2 py-0.5 rounded-full"><%= @document.cert_type.humanize %></span>
+          <% else %>
+            <span class="text-gray-400">—</span>
+          <% end %>
+        </dd>
+      </div>
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Secciones (chunks)</dt>
+        <dd class="text-gray-900"><%= @document.chunks_count %></dd>
+      </div>
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Subido por</dt>
+        <dd class="text-gray-900">
+          <%= link_to @document.uploaded_by.display_name, admin_user_path(@document.uploaded_by),
+                class: "text-purple-600 hover:text-purple-800 font-medium" %>
+        </dd>
+      </div>
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Creado</dt>
+        <dd class="text-gray-900"><%= l(@document.created_at, format: :long) %></dd>
+      </div>
+      <% if @document.file.attached? %>
+        <div class="flex justify-between text-sm">
+          <dt class="text-gray-500">Archivo</dt>
+          <dd class="text-gray-900">
+            <%= link_to @document.file.filename, rails_blob_path(@document.file, disposition: "attachment"),
+                  class: "text-purple-600 hover:text-purple-800 font-medium" %>
+            (<%= number_to_human_size(@document.file.byte_size) %>)
+          </dd>
+        </div>
+      <% end %>
+      <% if @document.processing_duration.present? %>
+        <div class="flex justify-between text-sm">
+          <dt class="text-gray-500">Tiempo de proceso</dt>
+          <dd class="text-gray-900"><%= @document.processing_duration %>s</dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <% if @document.failed? && @document.processing_error.present? %>
+    <div class="bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm mb-6">
+      <p class="font-medium mb-1">Error de procesamiento:</p>
+      <p class="text-red-700"><%= @document.processing_error %></p>
+    </div>
+  <% end %>
+
+  <!-- Actions card -->
+  <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">Acciones</h2>
+    <div class="flex flex-wrap items-center gap-3">
+      <%= link_to edit_admin_document_path(@document),
+                  class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" do %>
+        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        Editar
+      <% end %>
+
+      <% if @document.failed? %>
+        <%= button_to reingest_admin_document_path(@document), method: :post,
+                      class: "bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" do %>
+          <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reintentar ingesta
+        <% end %>
+      <% end %>
+
+      <%= button_to admin_document_path(@document), method: :delete,
+                    data: { turbo_confirm: "¿Eliminar \"#{@document.title}\"? Se eliminarán todas las secciones indexadas." },
+                    class: "text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50 transition-colors" do %>
+        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+        Eliminar
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Chunks card -->
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Secciones indexadas</h2>
+      <span class="text-xs text-gray-400"><%= @document.chunks_count %> secciones</span>
+    </div>
+    <% if @document.chunks.any? %>
+      <div class="space-y-2">
+        <% @document.chunks.order(:chunk_index).each do |chunk| %>
+          <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-medium text-gray-500">#<%= chunk.chunk_index %></span>
+              <span class="text-xs text-gray-400"><%= chunk.content.length %> caracteres</span>
+            </div>
+            <p class="text-xs text-gray-700 line-clamp-3"><%= truncate(chunk.content, length: 300) %></p>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-400">Este documento no tiene secciones indexadas.</p>
+    <% end %>
+  </div>
+</div>

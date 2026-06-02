@@ -30,6 +30,7 @@ class DocumentsController < ApplicationController
   def destroy
     @document = Document.find(params[:id])
     authorize @document
+    @document.file.purge_later if @document.file.attached?
     @document.destroy!
     redirect_to documents_path, notice: 'Document deleted.'
   end

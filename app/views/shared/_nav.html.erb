@@ -17,13 +17,18 @@
               class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ request.path.start_with?('/documents') ? 'bg-emerald-50 text-emerald-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
           <span>Documentos</span>
         <% end %>
+        <%
+          cert_active = request.path.start_with?('/certificate') ||
+                        request.path.start_with?('/admin/certificate_requests')
+          admin_active = request.path.start_with?('/admin') && !cert_active
+        %>
         <%= link_to certificate_requests_path,
-              class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ request.path.start_with?('/certificate') ? 'bg-amber-50 text-amber-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
+              class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ cert_active ? 'bg-amber-50 text-amber-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
           <span>Certificados</span>
         <% end %>
         <% if current_user.admin? %>
           <%= link_to admin_root_path,
-                class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ request.path.start_with?('/admin') ? 'bg-purple-50 text-purple-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
+                class: "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors #{ admin_active ? 'bg-purple-50 text-purple-700' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50' }" do %>
             <span>Admin</span>
           <% end %>
         <% end %>

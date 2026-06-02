@@ -1,6 +1,7 @@
 <% content_for :title, "Solicitud #{@certificate_request.reference_number}" %>
 
 <div class="max-w-2xl">
+  <%# ── Header ── %>
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-semibold text-gray-900"><%= @certificate_request.reference_number %></h1>
@@ -13,7 +14,7 @@
     <%= link_to "← Volver", admin_certificate_requests_path, class: "text-sm text-gray-500 hover:text-gray-700" %>
   </div>
 
-  <!-- Info card -->
+  <%# ── Section A: Request info (read-only details card) ── %>
   <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
     <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">Detalles</h2>
     <dl class="space-y-3">
@@ -31,59 +32,156 @@
         <dt class="text-gray-500">Solicitado</dt>
         <dd class="text-gray-900"><%= l(@certificate_request.requested_at, format: :long) %></dd>
       </div>
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Empleado</dt>
+        <dd class="text-gray-900">
+          <%= link_to @certificate_request.user.display_name, admin_user_path(@certificate_request.user),
+                class: "text-purple-600 hover:text-purple-800 font-medium" %>
+        </dd>
+      </div>
+      <div class="flex justify-between text-sm">
+        <dt class="text-gray-500">Email</dt>
+        <dd class="text-gray-900"><%= @certificate_request.user.email %></dd>
+      </div>
       <% if @certificate_request.expected_ready_at %>
         <div class="flex justify-between text-sm">
           <dt class="text-gray-500">Fecha estimada</dt>
           <dd class="text-gray-900"><%= l(@certificate_request.expected_ready_at, format: :long) %></dd>
         </div>
       <% end %>
+      <% if @certificate_request.ready_at %>
+        <div class="flex justify-between text-sm">
+          <dt class="text-gray-500">Fecha de entrega</dt>
+          <dd class="text-gray-900"><%= l(@certificate_request.ready_at, format: :long) %></dd>
+        </div>
+      <% end %>
       <% if @certificate_request.notes.present? %>
         <div class="flex justify-between text-sm">
-          <dt class="text-gray-500">Notas</dt>
+          <dt class="text-gray-500">Notas del empleado</dt>
           <dd class="text-gray-700 max-w-xs text-right"><%= @certificate_request.notes %></dd>
+        </div>
+      <% end %>
+      <% if @certificate_request.admin_notes.present? %>
+        <div class="flex justify-between text-sm">
+          <dt class="text-gray-500">Notas de RRHH</dt>
+          <dd class="text-gray-700 max-w-xs text-right"><%= @certificate_request.admin_notes %></dd>
         </div>
       <% end %>
     </dl>
   </div>
 
-  <!-- Upload certificate form -->
-  <%= form_with url: admin_certificate_request_path(@certificate_request), method: :patch,
-                multipart: true, class: "bg-white rounded-xl border border-gray-200 p-6 mb-6" do |f| %>
-    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">Subir certificado</h2>
+  <%# ── Section B: Update status form ── %>
+  <%= form_with model: [:admin, @certificate_request],
+                data: { controller: "admin-form",
+                        action: "turbo:submit-end->admin-form#submitSuccess" },
+                class: "card p-6 mb-6" do |f| %>
+    <%= hidden_field_tag :update_action, 'status_update' %>
 
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Archivo del certificado</label>
-        <% if @certificate_request.generated_file.attached? %>
-          <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg mb-3">
-            <svg class="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-green-800 truncate"><%= @certificate_request.generated_file.filename %></p>
-              <p class="text-xs text-green-600"><%= number_to_human_size(@certificate_request.generated_file.byte_size) %></p>
-            </div>
-            <%= link_to "Descargar", rails_blob_path(@certificate_request.generated_file, disposition: "attachment"),
-                        class: "text-sm text-green-700 font-medium hover:text-green-900 shrink-0" %>
-          </div>
-          <p class="text-xs text-gray-500 mb-2">Subir un nuevo archivo reemplazará el actual.</p>
-        <% end %>
-        <%= f.file_field :generated_file,
-              class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer" %>
-      </div>
+    <div class="flex items-center gap-2 mb-5">
+      <h2 class="section-label" style="margin:0;">Actualizar solicitud</h2>
+      <span data-admin-form-target="indicator"
+            style="width:8px; height:8px; border-radius:50%; background:#7c3aed; opacity:0; transition:opacity .2s; flex-shrink:0;"
+            title="Hay cambios sin guardar"></span>
+    </div>
 
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Actualizar estado</label>
+        <%= f.label :status, "Estado", class: "input-label" %>
         <%= f.select :status,
               CertificateRequest.statuses.keys.map { |s| [s.humanize, s] },
-              { selected: @certificate_request.status },
-              class: "block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" %>
+              {},
+              data: { action: "change->admin-form#fieldChanged" },
+              class: "input" %>
+      </div>
+      <div>
+        <%= f.label :expected_ready_at, "Fecha estimada de entrega", class: "input-label" %>
+        <%= f.date_field :expected_ready_at,
+              data: { action: "change->admin-form#fieldChanged" },
+              class: "input" %>
       </div>
     </div>
 
-    <div class="mt-5 flex justify-end">
-      <%= f.submit "Guardar cambios",
-            class: "bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer" %>
+    <div style="margin-bottom:20px;">
+      <%= f.label :admin_notes, "Nota para el empleado (opcional)", class: "input-label" %>
+      <p style="font-size:12px; color:#a1a1aa; margin:-2px 0 6px;">Visible para el empleado — motivo de rechazo, instrucciones, etc.</p>
+      <%= f.text_area :admin_notes,
+            rows: 3,
+            placeholder: "Ej. Carta lista, retirar en RRHH piso 3.",
+            data: { action: "input->admin-form#fieldChanged" },
+            class: "input",
+            style: "resize:vertical;" %>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end;">
+      <button type="submit" class="btn btn-violet" style="padding:9px 22px;">
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        Actualizar solicitud
+      </button>
+    </div>
+  <% end %>
+
+  <%# ── Section C: Certificate file upload ── %>
+  <%= form_with model: [:admin, @certificate_request],
+                multipart: true,
+                class: "card p-6 mb-6" do |f| %>
+    <%= hidden_field_tag :update_action, 'file_upload' %>
+    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">Certificado</h2>
+
+    <div class="space-y-4">
+      <% if @certificate_request.generated_file.attached? %>
+        <%# ── File attached state ── %>
+        <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <svg class="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-green-800 truncate"><%= @certificate_request.generated_file.filename %></p>
+            <p class="text-xs text-green-600"><%= number_to_human_size(@certificate_request.generated_file.byte_size) %></p>
+          </div>
+          <%= link_to "Descargar", rails_blob_path(@certificate_request.generated_file, disposition: "attachment"),
+                      class: "text-sm text-green-700 font-medium hover:text-green-900 shrink-0" %>
+        </div>
+        <p class="text-xs text-gray-500">Subir un nuevo archivo reemplazará el actual.</p>
+      <% else %>
+        <%# ── No file — redesigned empty state ── %>
+        <div class="empty-certificate">
+          <div class="empty-certificate-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M12 3v6a1 1 0 001 1h6"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M9 13h6"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M9 17h6"/>
+            </svg>
+          </div>
+          <p class="empty-certificate-title">Sin certificado adjunto</p>
+          <p class="empty-certificate-desc">
+            Aún no se ha subido ningún archivo. Selecciona un PDF, DOCX o TXT con el botón de abajo para adjuntar el certificado listo.
+          </p>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :generated_file, "Subir certificado", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.file_field :generated_file,
+              class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer transition-colors duration-150" %>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <%= check_box_tag :mark_ready, 'true', false,
+              class: "rounded border-gray-300 text-purple-600 focus:ring-purple-500 h-4 w-4" %>
+        <%= label_tag :mark_ready, "Marcar como listo al subir", class: "text-sm text-gray-700" %>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+      <button type="submit" class="btn btn-violet" style="padding:9px 22px;">
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Subir certificado
+      </button>
     </div>
   <% end %>
 </div>

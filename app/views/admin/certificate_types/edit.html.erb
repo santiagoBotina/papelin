@@ -1,0 +1,18 @@
+<% content_for :title, "Editar tipo de certificado" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Editar tipo de certificado</h1>
+    <p class="page-subtitle">Modifica los detalles del tipo de certificado</p>
+  </div>
+  <%= link_to admin_certificate_types_path, class: "btn btn-ghost btn-sm" do %>
+    <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+    Volver
+  <% end %>
+</div>
+
+<div class="card" style="padding:28px; max-width:560px;">
+  <%= render "form", certificate_type: @certificate_type %>
+</div>

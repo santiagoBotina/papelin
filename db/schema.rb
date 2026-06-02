@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_02_152625) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_02_154144) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -64,6 +64,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_02_152625) do
     t.string "reference_number", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "admin_notes"
     t.index ["reference_number"], name: "index_certificate_requests_on_reference_number", unique: true
     t.index ["status"], name: "index_certificate_requests_on_status"
     t.index ["user_id", "cert_type"], name: "index_certificate_requests_on_user_id_and_cert_type"

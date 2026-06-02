@@ -20,9 +20,13 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root 'dashboard#show'
-    resources :documents, only: %i[index show destroy]
+    resources :documents, only: %i[index show edit update destroy] do
+      member do
+        post :reingest
+      end
+    end
     resources :users, only: %i[index show new create edit update destroy]
     resources :certificate_requests, only: %i[index show update]
-    resources :certificate_types,    only: %i[index update]
+    resources :certificate_types,    only: %i[index new create edit update destroy]
   end
 end

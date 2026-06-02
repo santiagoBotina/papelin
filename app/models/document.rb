@@ -33,7 +33,6 @@ class Document < ApplicationRecord
   # `belongs_to :uploaded_by` already adds an implicit presence validation;
   # `validates :uploaded_by, presence: true` would be redundant (and is
   # flagged by Rails/RedundantPresenceValidationOnBelongsTo).
-  # rubocop:disable Rails/I18nLocaleTexts
   # Validation messages are verbatim from PROMPT.md §2.4 / AGENTS.md §8; the
   # i18n extraction refactor is scheduled for Phase 9 (test infrastructure).
   validates :file,
@@ -41,7 +40,6 @@ class Document < ApplicationRecord
                             message: 'must be a PDF, Word document, or plain text file' },
             size: { less_than: MAX_FILE_SIZE, message: 'must be less than 20MB' },
             if: -> { file.attached? }
-  # rubocop:enable Rails/I18nLocaleTexts
 
   # 6. Callbacks
   # (none)

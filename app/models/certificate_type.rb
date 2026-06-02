@@ -2,7 +2,8 @@
 
 class CertificateType < ApplicationRecord
   # Validations
-  validates :key,   presence: true, uniqueness: true
+  validates :key,   presence: true, uniqueness: { case_sensitive: false },
+                    format: { with: /\A[a-z_]+\z/, message: 'solo minúsculas y guiones bajos' }
   validates :label, presence: true
 
   # Scopes
@@ -11,11 +12,16 @@ class CertificateType < ApplicationRecord
 
   # The 4 types that map to the CertificateRequest cert_type enum.
   SEED_TYPES = [
-    { key: 'payroll',    label: 'Certificado de Nómina',    description: 'Ingresos y deducciones salariales' },
-    { key: 'labor',      label: 'Certificado Laboral',       description: 'Relación laboral vigente con la empresa' },
-    { key: 'employment', label: 'Carta de Empleo',           description: 'Carta oficial para bancos, visa, tramitación de visa, etc.' },
-    { key: 'other',      label: 'Otro',                      description: 'Otra certificación emitida por RRHH' }
+    { key: 'payroll',    label: 'Certificado de Nómina', description: 'Ingresos y deducciones salariales' },
+    { key: 'labor',      label: 'Certificado Laboral', description: 'Relación laboral vigente con la empresa' },
+    { key: 'employment', label: 'Carta de Empleo',
+      description: 'Carta oficial para bancos, visa, tramitación de visa, etc.' },
+    { key: 'other',      label: 'Otro', description: 'Otra certificación emitida por RRHH' }
   ].freeze
+
+  def associated_requests?
+    CertificateRequest.exists?(cert_type: CertificateRequest.cert_types[key])
+  end
 
   def self.seed!
     SEED_TYPES.each do |attrs|

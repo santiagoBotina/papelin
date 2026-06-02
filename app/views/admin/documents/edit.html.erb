@@ -1,0 +1,69 @@
+<% content_for :title, "Editar Documento" %>
+
+<div class="max-w-xl">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold text-gray-900">Editar Documento</h1>
+    <%= link_to "Volver", admin_document_path(@document), class: "text-sm text-gray-500 hover:text-gray-700" %>
+  </div>
+
+  <%= form_with model: @document, url: admin_document_path(@document), class: "space-y-6" do |f| %>
+    <% if @document.errors.any? %>
+      <div class="bg-red-50 border border-red-300 text-red-800 rounded-lg px-4 py-3 text-sm">
+        <ul class="list-disc list-inside">
+          <% @document.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :title, "Título", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :title, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <%= f.label :description, "Descripción", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_area :description, rows: 3, class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <%= f.label :doc_type, "Tipo de documento", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :doc_type,
+                   options_for_select(Document.doc_types.keys.map { |t| [t.humanize, t] }, @document.doc_type),
+                   {},
+                   class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div>
+      <%= f.label :cert_type, "Tipo de certificado", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :cert_type,
+                   options_for_select([["— Ninguno —", ""]] + Document.cert_types.keys.map { |t| [t.humanize, t] }, @document.cert_type),
+                   {},
+                   class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      <p class="text-xs text-gray-400 mt-1">Opcional. Relaciona este documento con un tipo de certificado.</p>
+    </div>
+
+    <div>
+      <%= f.label :file, "Archivo", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.file_field :file, accept: ".pdf,.docx,.txt,.md",
+                        class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      <% if @document.file.attached? %>
+        <p class="mt-2 text-sm text-gray-500">
+          Archivo actual: <strong><%= @document.file.filename %></strong>
+          (<%= number_to_human_size(@document.file.byte_size) %>)
+        </p>
+        <p class="text-xs text-gray-400 mt-1">
+          Subir un nuevo archivo reemplazará el actual y disparará una nueva ingesta de RAG.
+        </p>
+      <% end %>
+    </div>
+
+    <div class="flex items-center gap-3 pt-2">
+      <%= f.submit "Actualizar Documento",
+                   class: "bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-lg text-sm font-medium transition-colors" %>
+      <%= link_to "Cancelar", admin_document_path(@document),
+                  class: "text-sm text-gray-500 hover:text-gray-700 py-2.5 px-4" %>
+    </div>
+  <% end %>
+</div>
