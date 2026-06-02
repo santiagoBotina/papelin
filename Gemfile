@@ -28,6 +28,7 @@ gem 'ruby-openai', '~> 7.0'
 
 # File uploads
 gem 'active_storage_validations'
+gem 'aws-sdk-s3', '~> 1.160', require: false
 
 # Background jobs
 gem 'redis'

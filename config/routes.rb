@@ -22,5 +22,6 @@ Rails.application.routes.draw do
     root 'dashboard#show'
     resources :documents, only: [:index, :show, :destroy]
     resources :users, only: [:index, :show, :new, :create, :edit, :update, :destroy]
+    resources :certificate_requests, only: [:index, :show, :update]
   end
 end

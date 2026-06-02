@@ -30,6 +30,26 @@ services:
       timeout: 5s
       retries: 5
 
+  localstack:
+    image: localstack/localstack:3
+    container_name: certificate_assistant_localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
+      - LOCALSTACK_HOST=localhost
+    volumes:
+      - certificate_assistant_localstack_data:/var/lib/localstack
+      - ./bin/localstack_init.sh:/etc/localstack/init/ready.d/init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health | grep -q '\"s3\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
 volumes:
   certificate_assistant_pgdata:
   certificate_assistant_redisdata:
+  certificate_assistant_localstack_data:

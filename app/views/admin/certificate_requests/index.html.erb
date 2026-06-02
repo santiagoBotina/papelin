@@ -1,0 +1,80 @@
+<% content_for :title, @user ? "Certificados — #{@user.display_name}" : "Todas las solicitudes" %>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      <% if @user %>
+        Certificados de <%= @user.display_name %>
+      <% else %>
+        Solicitudes de certificados
+      <% end %>
+    </h1>
+    <p class="page-subtitle">
+      <% if @user %>
+        <%= link_to "← #{@user.display_name}", admin_user_path(@user), class: "text-purple-600 hover:text-purple-800" %>
+      <% else %>
+        Todas las solicitudes de todos los usuarios
+      <% end %>
+    </p>
+  </div>
+</div>
+
+<% if @certificate_requests.present? %>
+  <div class="card overflow-hidden">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Referencia</th>
+          <% unless @user %><th>Usuario</th><% end %>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th>Solicitado</th>
+          <th>Archivo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @certificate_requests.each do |cr| %>
+          <tr>
+            <td>
+              <span style="font-weight:600; color:#7c3aed; font-size:13px; font-family:monospace;"><%= cr.reference_number %></span>
+            </td>
+            <% unless @user %>
+              <td>
+                <%= link_to cr.user.display_name, admin_user_path(cr.user), class: "text-sm text-gray-700 hover:text-purple-700" %>
+              </td>
+            <% end %>
+            <td><span style="font-size:13px; color:#3f3f46;"><%= cr.cert_type.humanize %></span></td>
+            <td>
+              <% if cr.overdue? %>
+                <span class="badge badge-failed">Vencida</span>
+              <% else %>
+                <span class="badge badge-<%= cr.status %>"><%= cr.human_status %></span>
+              <% end %>
+            </td>
+            <td style="color:#71717a;"><%= l(cr.requested_at, format: :short) %></td>
+            <td>
+              <% if cr.generated_file.attached? %>
+                <span style="font-size:12px; color:#16a34a;">✓ Adjunto</span>
+              <% else %>
+                <span style="font-size:12px; color:#d4d4d8;">—</span>
+              <% end %>
+            </td>
+            <td>
+              <%= link_to "Gestionar", admin_certificate_request_path(cr),
+                    class: "text-sm text-purple-600 hover:text-purple-800 font-medium" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="empty-state">
+    <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+    </svg>
+    <p class="empty-state-title">Sin solicitudes</p>
+    <p class="empty-state-desc">No hay solicitudes de certificados registradas</p>
+  </div>
+<% end %>
