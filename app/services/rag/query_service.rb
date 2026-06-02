@@ -59,7 +59,7 @@ module Rag
         content: generation.content,
         status: :completed,
         metadata: {
-          sources: chunks.map(&:source_title),
+          sources: chunks.map { |c| { 'title' => c.source_title } }.uniq,
           token_usage: generation.metadata[:token_usage]
         }
       )

@@ -12,6 +12,7 @@ module Documents
       application/pdf
       application/vnd.openxmlformats-officedocument.wordprocessingml.document
       text/plain
+      text/markdown
     ].freeze
 
     def self.call(document:)
@@ -58,6 +59,8 @@ module Documents
         extract_docx
       when 'text/plain'
         extract_txt
+      when 'text/markdown'
+        extract_markdown
       end
     end
 
@@ -81,6 +84,11 @@ module Documents
     def extract_txt
       raw = @document.file.download
       # ActiveStorage downloads as ASCII-8BIT; force UTF-8 for downstream use
+      raw.force_encoding('UTF-8')
+    end
+
+    def extract_markdown
+      raw = @document.file.download
       raw.force_encoding('UTF-8')
     end
 

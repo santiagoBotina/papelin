@@ -3,7 +3,7 @@
 module Rag
   class RetrievalService
     TOP_K = 5
-    SIMILARITY_THRESHOLD = 0.75
+    SIMILARITY_THRESHOLD = 0.65
 
     Result = Struct.new(:success?, :chunks, :error, keyword_init: true)
 

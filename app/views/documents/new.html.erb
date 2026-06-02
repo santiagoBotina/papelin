@@ -4,7 +4,7 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Subir documento</h1>
-      <p class="page-subtitle">PDF, Word o texto plano · máx. 20 MB</p>
+      <p class="page-subtitle">PDF, Word, Markdown o texto plano · máx. 20 MB</p>
     </div>
     <%= link_to documents_path, class: "btn btn-ghost" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,9 +71,9 @@
             </svg>
           </div>
           <p style="font-size:14px; font-weight:500; color:#18181b; margin-bottom:4px;">Arrastra tu archivo aquí</p>
-          <p style="font-size:13px; color:#a1a1aa; margin-bottom:12px;">PDF, DOCX o TXT — hasta 20 MB</p>
+          <p style="font-size:13px; color:#a1a1aa; margin-bottom:12px;">PDF, DOCX, MD o TXT — hasta 20 MB</p>
           <%= f.file_field :file,
-                accept: ".pdf,.docx,.txt",
+                accept: ".pdf,.docx,.txt,.md",
                 data: { "upload-target": "fileInput", action: "change->upload#fileSelected" },
                 style: "font-size:13px; color:#71717a;",
                 class: "cursor-pointer" %>

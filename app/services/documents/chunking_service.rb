@@ -40,9 +40,9 @@ module Documents
       while start < text_length
         finish = [start + CHUNK_SIZE, text_length].min
         content = @text[start...finish].strip
-        next if content.blank?
 
-        chunks << build_chunk(content, start, finish, index)
+        chunks << build_chunk(content, start, finish, index) if content.present?
+
         start += step
         index += 1
       end
@@ -55,7 +55,7 @@ module Documents
         document_id: @document.id,
         content: content,
         chunk_index: index,
-        metadata: { char_start: char_start, char_end: char_end }.to_json,
+        metadata: { char_start: char_start, char_end: char_end, source: @document.title }.to_json,
         created_at: Time.current,
         updated_at: Time.current
       }

@@ -9,6 +9,7 @@ class Document < ApplicationRecord
     application/pdf
     application/vnd.openxmlformats-officedocument.wordprocessingml.document
     text/plain
+    text/markdown
   ].freeze
   MAX_FILE_SIZE = 20.megabytes
   PROCESSING_ERROR_MAX_LENGTH = 2000

@@ -8,6 +8,7 @@
     <%= csp_meta_tag %>
     <%= yield :head %>
     <link rel="manifest" href="/manifest.json">
+    <%= favicon_link_tag 'favicon.svg', rel: 'icon', type: 'image/svg+xml' %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
@@ -16,7 +17,7 @@
   <body class="h-screen overflow-hidden bg-white flex flex-col">
     <%= render "shared/nav" %>
     <%# flex-1 + min-h-0 lets this shrink below content size so only the inner scroll target scrolls %>
-    <main class="flex-1 overflow-y-auto <%= yield :main_class %>">
+    <main class="flex-1 min-h-0 overflow-y-auto <%= yield :main_class %>">
       <div class="<%= content_for?(:main_inner) ? yield(:main_inner) : 'max-w-6xl mx-auto px-5 py-10' %>">
         <%= render "shared/flash" %>
         <%= yield %>
