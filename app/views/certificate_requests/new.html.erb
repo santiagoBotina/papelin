@@ -1,0 +1,146 @@
+<% content_for :title, "Nueva solicitud de certificado" %>
+
+<div style="max-width:560px; padding-bottom:40px;">
+
+  <%# Header %>
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; gap:12px;">
+    <div>
+      <h1 class="page-title">Solicitar certificado</h1>
+      <p class="page-subtitle">Selecciona el tipo de certificado que necesitas</p>
+    </div>
+    <% if @conversation_id.present? %>
+      <%= link_to conversation_path(@conversation_id), class: "btn btn-ghost btn-sm", style: "flex-shrink:0;" do %>
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver
+      <% end %>
+    <% else %>
+      <%= link_to certificate_requests_path, class: "btn btn-ghost btn-sm", style: "flex-shrink:0;" do %>
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Mis solicitudes
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @available_cert_types.empty? %>
+    <%# Empty state — compact, helpful %>
+    <div class="card" style="padding:32px 28px; text-align:center;">
+      <div style="width:40px; height:40px; background:#f5f3ff; border-radius:10px; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+        <svg style="width:20px; height:20px; color:#7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <p style="font-size:14px; font-weight:600; color:#18181b; margin-bottom:6px;">
+        No hay tipos disponibles por el momento
+      </p>
+      <p style="font-size:13px; color:#71717a; line-height:1.55; max-width:340px; margin:0 auto 20px;">
+        El equipo de RRHH aún no ha habilitado solicitudes. Puedes consultar a través del asistente o intentar más tarde.
+      </p>
+      <% if @conversation_id.present? %>
+        <%= link_to conversation_path(@conversation_id), class: "btn btn-violet btn-sm" do %>
+          Volver a la conversación
+        <% end %>
+      <% else %>
+        <%= link_to certificate_requests_path, class: "btn btn-ghost btn-sm" do %>
+          Ver mis solicitudes
+        <% end %>
+      <% end %>
+    </div>
+
+  <% else %>
+    <%# Form %>
+    <div class="card" style="padding:28px;">
+      <%= form_with model: @certificate_request, url: certificate_requests_path do |f| %>
+
+        <% if @certificate_request.errors.any? %>
+          <div style="margin-bottom:20px; padding:14px 16px; background:#fff1f2; border:1px solid #fecdd3; border-radius:10px;">
+            <ul style="margin:0; padding-left:16px; font-size:13px; color:#be123c;">
+              <% @certificate_request.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <% if @conversation_id.present? %>
+          <%= f.hidden_field :conversation_id, value: @conversation_id %>
+        <% end %>
+
+        <%# Certificate type selection %>
+        <div style="margin-bottom:22px;">
+          <p class="input-label" style="margin-bottom:10px;">Tipo de certificado</p>
+          <%
+            labels = {
+              'payroll'    => { title: 'Nómina',          desc: 'Ingresos y deducciones salariales',         icon: '💰' },
+              'labor'      => { title: 'Laboral',          desc: 'Relación laboral vigente con la empresa',   icon: '🏢' },
+              'employment' => { title: 'Carta de empleo',  desc: 'Carta oficial para bancos, visa, etc.',     icon: '✉️' },
+              'other'      => { title: 'Otro',             desc: 'Otra certificación de RRHH',                icon: '📄' }
+            }
+          %>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <% @available_cert_types.each do |type| %>
+              <% meta = labels.fetch(type, { title: type.humanize, desc: '', icon: '📋' }) %>
+              <label style="display:flex; align-items:center; gap:12px; padding:14px 16px; border:1.5px solid #e4e4e7; border-radius:10px; cursor:pointer; transition:border-color .15s, background .15s;"
+                     onmouseover="this.style.borderColor='#c4b5fd'; this.style.background='#faf8ff';"
+                     onmouseout="if(!this.querySelector('input').checked){this.style.borderColor='#e4e4e7'; this.style.background='#fff';}">
+                <%= f.radio_button :cert_type, type,
+                      style: "display:none;",
+                      onchange: "document.querySelectorAll('[data-cert-option]').forEach(el => {
+                        const inp = el.querySelector('input');
+                        el.style.borderColor = inp.checked ? '#7c3aed' : '#e4e4e7';
+                        el.style.background  = inp.checked ? '#f5f3ff' : '#fff';
+                      });",
+                      data: { cert_option: type } %>
+                <span style="font-size:18px; line-height:1; flex-shrink:0;"><%= meta[:icon] %></span>
+                <div style="flex:1; min-width:0;">
+                  <p style="font-size:13.5px; font-weight:600; color:#18181b; margin:0 0 2px;"><%= meta[:title] %></p>
+                  <p style="font-size:12px; color:#71717a; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= meta[:desc] %></p>
+                </div>
+                <div style="width:18px; height:18px; border:2px solid #d4d4d8; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:border-color .15s, background .15s;" class="radio-indicator-<%= type %>">
+                </div>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <%# Notes %>
+        <div style="margin-bottom:24px;">
+          <%= f.label :notes, "Notas adicionales", class: "input-label" %>
+          <p style="font-size:12px; color:#a1a1aa; margin-bottom:6px; margin-top:-2px;">Opcional — destinatario, propósito específico, etc.</p>
+          <%= f.text_area :notes, rows: 3, class: "input",
+                placeholder: "Ej. Carta dirigida a Banco XXXX para solicitud de crédito hipotecario" %>
+        </div>
+
+        <%# Submit %>
+        <button type="submit" class="btn btn-violet" style="width:100%; padding:12px; font-size:14px; justify-content:center;">
+          <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+          </svg>
+          Enviar solicitud
+        </button>
+
+      <% end %>
+    </div>
+
+    <p style="font-size:12px; color:#a1a1aa; text-align:center; margin-top:14px; line-height:1.5;">
+      Tu solicitud quedará en estado <strong style="color:#52525b;">Enviada</strong> y RRHH la procesará en los próximos días hábiles.
+    </p>
+
+  <% end %>
+</div>
+
+<script>
+  // Keep selected radio highlighted after page load (e.g. on validation error)
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input[type="radio"][name$="[cert_type]"]').forEach(radio => {
+      const label = radio.closest('label');
+      if (radio.checked && label) {
+        label.style.borderColor = '#7c3aed';
+        label.style.background  = '#f5f3ff';
+      }
+    });
+  });
+</script>

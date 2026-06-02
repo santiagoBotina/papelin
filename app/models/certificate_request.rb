@@ -36,6 +36,12 @@ class CertificateRequest < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
 
   # 8. Class methods
+
+  # Returns the cert_type keys that are enabled by admin in the certificate_types table.
+  def self.available_cert_types
+    CertificateType.active.pluck(:key)
+  end
+
   def self.generate_reference
     year    = Date.current.year
     counter = where(created_at: Date.current.beginning_of_year..).count + 1

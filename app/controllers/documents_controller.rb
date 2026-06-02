@@ -37,6 +37,8 @@ class DocumentsController < ApplicationController
   private
 
   def document_params
-    params.require(:document).permit(:title, :description, :doc_type, :file)
+    permitted = params.require(:document).permit(:title, :description, :doc_type, :cert_type, :file)
+    permitted[:cert_type] = nil if permitted[:cert_type].blank?
+    permitted
   end
 end

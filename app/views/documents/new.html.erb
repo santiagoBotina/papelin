@@ -44,6 +44,21 @@
         </div>
 
         <div>
+          <%= f.label :cert_type, "Tipo de certificado (opcional)", class: "input-label" %>
+          <%= f.select :cert_type,
+                options_for_select(
+                  [['— Ninguno (documento general) —', '']] +
+                  CertificateRequest.cert_types.keys.map { |t| [t.humanize, t] },
+                  @document.cert_type
+                ),
+                {},
+                class: "input" %>
+          <p style="font-size:11.5px; color:#a1a1aa; margin-top:4px;">
+            Si se establece, habilita ese tipo de certificado para que los empleados lo soliciten.
+          </p>
+        </div>
+
+        <div>
           <label class="input-label">Estado inicial</label>
           <div class="input flex items-center gap-2 cursor-default" style="color:#71717a;">
             <span class="badge badge-pending">Pendiente</span>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_01_042000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_02_152625) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -71,6 +71,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_01_042000) do
     t.index ["user_id"], name: "index_certificate_requests_on_user_id"
   end
 
+  create_table "certificate_types", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "label", null: false
+    t.text "description"
+    t.boolean "active", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_certificate_types_on_active"
+    t.index ["key"], name: "index_certificate_types_on_key", unique: true
+  end
+
   create_table "conversations", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "title"
@@ -105,6 +116,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_01_042000) do
     t.integer "chunks_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "cert_type"
+    t.index ["cert_type"], name: "index_documents_on_cert_type"
     t.index ["doc_type"], name: "index_documents_on_doc_type"
     t.index ["status"], name: "index_documents_on_status"
     t.index ["uploaded_by_id", "created_at"], name: "index_documents_on_uploaded_by_id_and_created_at"

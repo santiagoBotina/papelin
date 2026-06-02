@@ -16,7 +16,8 @@
 class CertificateRequestPolicy < ApplicationPolicy
   def index? = true
   def show? = owner_or_admin?
-  def create? = true
+  def new? = !user.admin?
+  def create? = !user.admin?
   def update? = user.admin?
   def destroy? = false
 

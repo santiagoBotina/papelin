@@ -47,8 +47,26 @@
     <% end %>
   </div>
 
+  <%# Quick actions — only for non-admin employees %>
+  <% unless current_user.admin? %>
+  <div class="flex items-center gap-2 pt-3" style="border-top: 1px solid #f4f4f5;">
+    <span style="font-size:11.5px; color:#a1a1aa; font-weight:500; white-space:nowrap;">Acción rápida:</span>
+    <%= link_to new_certificate_request_path(conversation_id: @conversation.id),
+          style: "display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:500;
+                  color:#7c3aed; background:#f5f3ff; border:1px solid #ede9fe; border-radius:999px;
+                  padding:3px 11px; text-decoration:none; transition:background .15s;",
+          onmouseover: "this.style.background='#ede9fe'",
+          onmouseout:  "this.style.background='#f5f3ff'" do %>
+      <svg style="width:11px;height:11px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+      </svg>
+      Solicitar certificado
+    <% end %>
+  </div>
+  <% end %>
+
   <%# Input area %>
-  <div class="pt-4" style="border-top: 1px solid #f4f4f5;">
+  <div class="pt-3">
     <%= form_with url: conversation_messages_path(@conversation),
                   scope: :message,
                   data: { controller: "chat",

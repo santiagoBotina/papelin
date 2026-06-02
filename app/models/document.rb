@@ -21,8 +21,11 @@ class Document < ApplicationRecord
   has_one_attached :file
 
   # 4. Enums
-  enum :doc_type, { policy: 0, procedure: 1, faq: 2, template: 3 }, validate: true
-  enum :status,   { pending: 0, processing: 1, ready: 2, failed: 3 }, validate: true
+  enum :doc_type,  { policy: 0, procedure: 1, faq: 2, template: 3 }, validate: true
+  enum :status,    { pending: 0, processing: 1, ready: 2, failed: 3 }, validate: true
+  # Optional — tag which certificate type this document supports. Only ready documents
+  # with a cert_type set will surface as requestable certificate types for employees.
+  enum :cert_type, { payroll: 0, labor: 1, employment: 2, other: 3 }, prefix: :cert, allow_nil: true
 
   # 5. Validations
   validates :title,    presence: true

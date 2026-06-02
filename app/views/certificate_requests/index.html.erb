@@ -5,32 +5,34 @@
     <h1 class="page-title">Mis certificados</h1>
     <p class="page-subtitle">Historial y estado de tus solicitudes</p>
   </div>
+  <%= link_to new_certificate_request_path, class: "btn btn-violet" do %>
+    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+    </svg>
+    Solicitar
+  <% end %>
 </div>
 
 <% if @certificate_requests.present? %>
-  <%# Summary cards %>
   <%
-    active_count   = @certificate_requests.count { |r| !r.delivered? && !r.rejected? }
-    ready_count    = @certificate_requests.count(&:ready?)
-    overdue_count  = @certificate_requests.count(&:overdue?)
+    active_count  = @certificate_requests.count { |r| !r.delivered? && !r.rejected? }
+    ready_count   = @certificate_requests.count(&:ready?)
+    overdue_count = @certificate_requests.count(&:overdue?)
   %>
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-    <div class="card stat-card">
-      <p class="stat-value" style="color:#5b21b6;"><%= @certificate_requests.count %></p>
-      <p class="stat-label">Total solicitudes</p>
-    </div>
-    <div class="card stat-card">
-      <p class="stat-value" style="color:#1e40af;"><%= active_count %></p>
-      <p class="stat-label">En proceso</p>
-    </div>
-    <div class="card stat-card">
-      <p class="stat-value" style="color:#166534;"><%= ready_count %></p>
-      <p class="stat-label">Listas</p>
-    </div>
-    <div class="card stat-card">
-      <p class="stat-value" style="color:#991b1b;"><%= overdue_count %></p>
-      <p class="stat-label">Vencidas</p>
-    </div>
+
+  <%# Stats row %>
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px;">
+    <% [
+         [@certificate_requests.count, 'Total',      '#5b21b6'],
+         [active_count,                'En proceso',  '#1e40af'],
+         [ready_count,                 'Listas',      '#166534'],
+         [overdue_count,               'Vencidas',    '#991b1b']
+       ].each do |val, label, color| %>
+      <div class="card stat-card">
+        <p class="stat-value" style="color:<%= color %>; font-size:28px;"><%= val %></p>
+        <p class="stat-label"><%= label %></p>
+      </div>
+    <% end %>
   </div>
 
   <div class="card overflow-hidden">
@@ -51,9 +53,7 @@
               <%= link_to cr.reference_number, certificate_request_path(cr),
                     style: "font-weight:600; color:#7c3aed; font-size:13px; font-family:monospace;" %>
             </td>
-            <td>
-              <span style="font-size:13px; color:#3f3f46;"><%= cr.cert_type.humanize %></span>
-            </td>
+            <td style="font-size:13px; color:#3f3f46;"><%= cr.cert_type.humanize %></td>
             <td>
               <% if cr.overdue? %>
                 <span class="badge badge-failed">Vencida</span>
@@ -61,12 +61,12 @@
                 <span class="badge badge-<%= cr.status %>"><%= cr.human_status %></span>
               <% end %>
             </td>
-            <td style="color:#71717a;"><%= l(cr.requested_at, format: :short) %></td>
-            <td>
+            <td style="color:#71717a; font-size:13px;"><%= l(cr.requested_at, format: :short) %></td>
+            <td style="font-size:13px;">
               <% if cr.expected_ready_at %>
                 <span style="color:<%= cr.overdue? ? '#b91c1c' : '#71717a' %>">
                   <%= l(cr.expected_ready_at, format: :short) %>
-                  <%= " (vencida)" if cr.overdue? %>
+                  <% if cr.overdue? %><span style="font-size:11px;"> (vencida)</span><% end %>
                 </span>
               <% else %>
                 <span style="color:#d4d4d8;">—</span>
@@ -78,15 +78,23 @@
     </table>
   </div>
 
-  <% if defined?(@pagy) && @pagy %>
-    <div class="mt-8"><%== pagy_nav(@pagy) if @pagy.pages > 1 %></div>
-  <% end %>
 <% else %>
-  <div class="empty-state">
-    <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-    </svg>
-    <p class="empty-state-title">Sin solicitudes aún</p>
-    <p class="empty-state-desc">Cuando solicites un certificado aparecerá aquí</p>
+  <%# Empty state — compact, with action button %>
+  <div style="text-align:center; padding:48px 24px;">
+    <div style="width:44px; height:44px; background:#f5f3ff; border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+      <svg style="width:22px; height:22px; color:#7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+    </div>
+    <p style="font-size:15px; font-weight:600; color:#18181b; margin-bottom:6px;">Sin solicitudes aún</p>
+    <p style="font-size:13.5px; color:#71717a; margin-bottom:20px; line-height:1.55;">
+      Cuando hagas tu primera solicitud aparecerá aquí con su estado actualizado.
+    </p>
+    <%= link_to new_certificate_request_path, class: "btn btn-violet btn-sm" do %>
+      <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+      </svg>
+      Solicitar mi primer certificado
+    <% end %>
   </div>
 <% end %>

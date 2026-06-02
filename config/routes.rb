@@ -16,12 +16,13 @@ Rails.application.routes.draw do
 
   resources :documents, only: %i[index show new create destroy]
 
-  resources :certificate_requests, only: %i[index show]
+  resources :certificate_requests, only: %i[index show new create]
 
   namespace :admin do
     root 'dashboard#show'
     resources :documents, only: %i[index show destroy]
     resources :users, only: %i[index show new create edit update destroy]
     resources :certificate_requests, only: %i[index show update]
+    resources :certificate_types,    only: %i[index update]
   end
 end
