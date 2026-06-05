@@ -121,7 +121,7 @@ GEM
     childprocess (5.1.0)
       logger (~> 1.5)
     concurrent-ruby (1.3.6)
-    connection_pool (2.5.5)
+    connection_pool (3.0.2)
     crack (1.0.1)
       bigdecimal
       rexml
@@ -480,7 +480,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   bullet
-  connection_pool (~> 2.5)
+  connection_pool (~> 3.0)
   devise
   docx
   dotenv-rails

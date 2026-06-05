@@ -47,7 +47,7 @@ gem 'rack-attack'
 gem 'redcarpet'
 
 # Compatibility pin for Ruby 3.3 (connection_pool 3.x uses newer syntax)
-gem 'connection_pool', '~> 2.5'
+gem 'connection_pool', '~> 3.0'
 
 # Utilities
 gem 'bootsnap', require: false
