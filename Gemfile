@@ -53,6 +53,7 @@ gem 'connection_pool', '~> 2.5'
 gem 'bootsnap', require: false
 
 group :development, :test do
+  gem 'brakeman', require: false
   gem 'dotenv-rails'
   gem 'factory_bot_rails'
   gem 'faker'

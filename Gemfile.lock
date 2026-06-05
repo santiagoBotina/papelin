@@ -111,6 +111,8 @@ GEM
     bindex (0.8.1)
     bootsnap (1.24.5)
       msgpack (~> 1.2)
+    brakeman (8.0.4)
+      racc
     builder (3.3.0)
     bullet (8.1.2)
       activesupport (>= 3.0.0)
@@ -476,6 +478,7 @@ DEPENDENCIES
   active_storage_validations
   aws-sdk-s3 (~> 1.160)
   bootsnap
+  brakeman
   bullet
   connection_pool (~> 2.5)
   devise
