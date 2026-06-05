@@ -55,7 +55,7 @@ module Documents
         document_id: @document.id,
         content: content,
         chunk_index: index,
-        metadata: { char_start: char_start, char_end: char_end, source: @document.title }.to_json,
+        metadata: { char_start: char_start, char_end: char_end, source: @document.title },
         created_at: Time.current,
         updated_at: Time.current
       }

@@ -15,6 +15,11 @@ module Documents
       text/markdown
     ].freeze
 
+    # Matches common Unicode emoji ranges (pictographs, emoticons, symbols,
+    # and supplemental pictographs).  Stripping them before chunking/embedding
+    # removes semantic noise so the vector better represents the actual text.
+    EMOJI_REGEX = /[\u{2600}-\u{27BF}\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FAFF}\u{FE00}-\u{FE0F}]/
+
     def self.call(document:)
       new(document: document).call
     end
@@ -85,11 +90,33 @@ module Documents
       raw = @document.file.download
       # ActiveStorage downloads as ASCII-8BIT; force UTF-8 for downstream use
       raw.force_encoding('UTF-8')
+      strip_markdown_syntax(raw)
     end
 
     def extract_markdown
       raw = @document.file.download
       raw.force_encoding('UTF-8')
+      strip_markdown_syntax(raw)
+    end
+
+    # Removes common Markdown formatting syntax so the plain text fed to the
+    # embedding model produces semantically clean vectors without noise from
+    # formatting tokens (#, **, [], (), backticks, emojis, etc.).
+    def strip_markdown_syntax(text)
+      text
+        .gsub(/^\#{1,6}\s+/, '') # headings: ## text → text
+        .gsub(/\[([^\[\]]*)\]\([^()]*\)/, '\1') # [text](url) → text
+        .gsub(/[*_]{1,3}/, '')             # bold/italic: **text** → text
+        .gsub(/`{1,3}([^`]*)`{1,3}/, '\1') # inline code: `code` → code
+        .gsub(/~~(.+?)~~/, '\1')           # strikethrough
+        .gsub(/^\s*[-*+]{1,3}\s/, '')      # unordered list markers
+        .gsub(/^\s*\d+\.\s/, '')           # ordered list markers
+        .gsub(/>\s/, '')                   # blockquotes
+        .delete('|')                       # table pipes
+        .gsub(/^---+$/, '')                # horizontal rules
+        .gsub(EMOJI_REGEX, '')             # emojis to reduce embedding noise
+        .gsub(/\n{3,}/, "\n\n")            # collapse excessive blank lines
+        .strip
     end
 
     # Strip null bytes and non-whitespace control characters that would

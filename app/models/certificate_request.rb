@@ -15,7 +15,7 @@ class CertificateRequest < ApplicationRecord
   has_one_attached :generated_file
 
   # 4. Enums
-  enum :cert_type, { payroll: 0, labor: 1, employment: 2, other: 3 }, validate: true
+  enum :cert_type, { payroll: 0, labor: 1, employment: 2, other: 3, recommendation: 4 }, validate: true
   enum :status,    { submitted: 0, in_review: 1, ready: 2, rejected: 3, delivered: 4 }, validate: true
 
   # 5. Validations

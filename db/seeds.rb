@@ -93,6 +93,10 @@ end
 
 Rails.logger.debug { "  #{DocumentChunk.count} document chunks seeded" }
 
+# ─── Certificate Types (prerequisite for requests) ────────────────────────────
+CertificateType.seed!
+Rails.logger.debug { "  #{CertificateType.count} certificate types seeded" }
+
 # ─── Certificate Requests ─────────────────────────────────────────────────────
 
 cr1 = CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current.year}-00001") do |r|
@@ -106,12 +110,12 @@ end
 
 cr2 = CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current.year}-00002") do |r|
   r.user             = employee1
-  r.cert_type        = :employment
+  r.cert_type        = :recommendation
   r.status           = :ready
   r.requested_at     = 10.days.ago
   r.expected_ready_at = 5.days.ago
   r.ready_at         = 4.days.ago
-  r.notes            = 'Required by visa application.'
+  r.notes            = 'Carta para solicitud de beca.'
 end
 
 cr3 = CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current.year}-00003") do |r|
@@ -133,10 +137,10 @@ end
 
 CertificateRequest.find_or_create_by!(reference_number: "CR-#{Date.current.year}-00005") do |r|
   r.user             = employee2
-  r.cert_type        = :other
+  r.cert_type        = :labor
   r.status           = :rejected
   r.requested_at     = 20.days.ago
-  r.notes            = 'Rejected — insufficient documentation.'
+  r.notes            = 'Rechazado — documentación insuficiente.'
 end
 
 Rails.logger.debug { "  #{CertificateRequest.count} certificate requests seeded" }
@@ -161,9 +165,11 @@ unless conv1.messages.exists?
                          content: 'What is the status of my current requests?')
   conv1.messages.create!(role: :assistant, status: :completed,
                          content: "You have **2 active certificate requests**:\n\n" \
-                                  "- `#{cr1.reference_number}` — Payroll certificate, **Submitted**, expected #{cr1.expected_ready_at&.strftime('%b %d')}\n" \
-                                  "- `#{cr3.reference_number}` — Labor certificate, **Submitted** (overdue)\n\n" \
-                                  "Your employment certificate (`#{cr2.reference_number}`) is **Ready for download**.")
+                                  "- `#{cr1.reference_number}` — Payroll certificate, " \
+                                  "**Submitted**, expected #{cr1.expected_ready_at&.strftime('%b %d')}\n" \
+                                  "- `#{cr3.reference_number}` — Labor certificate, " \
+                                  "**Submitted** (overdue)\n\n" \
+                                  "Your recommendation letter (`#{cr2.reference_number}`) is **Ready for download**.")
 end
 
 conv2 = Conversation.find_or_create_by!(title: 'Benefits questions', user: employee1) do |c|
@@ -197,8 +203,12 @@ Rails.logger.debug { "  #{Conversation.count} conversations, #{Message.count} me
 Rails.logger.debug ''
 Rails.logger.debug 'Done! Seed data summary:'
 Rails.logger.debug { "  Users:                #{User.count}  (1 admin, #{User.employee.count} employees)" }
+docs_ready   = Document.ready.count
+docs_pending = Document.pending.count
+docs_failed  = Document.failed.count
 Rails.logger.debug do
-  "  Documents:            #{Document.count}  (#{Document.ready.count} ready, #{Document.pending.count} pending, #{Document.failed.count} failed)"
+  format('  Documents:            %<total>d (%<ready>d ready, %<pending>d pending, %<failed>d failed)',
+         total: Document.count, ready: docs_ready, pending: docs_pending, failed: docs_failed)
 end
 Rails.logger.debug { "  Document chunks:      #{DocumentChunk.count}" }
 Rails.logger.debug { "  Certificate requests: #{CertificateRequest.count}" }

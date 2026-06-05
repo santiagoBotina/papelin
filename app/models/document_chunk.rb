@@ -26,13 +26,11 @@ class DocumentChunk < ApplicationRecord
   # (none)
 
   # 7. Scopes
-  scope :for_ready_documents, lambda {
-    joins(:document).where(documents: { status: Document.statuses[:ready] })
-  }
+  scope :ready, -> { for_ready_documents }
 
   # 8. Class methods
   def self.for_ready_documents
-    joins(:document).where(documents: { status: Document.statuses[:ready] })
+    eager_load(:document).where(documents: { status: Document.statuses[:ready] })
   end
 
   # 9. Public instance methods

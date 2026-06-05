@@ -10,13 +10,14 @@ class CertificateType < ApplicationRecord
   scope :active,   -> { where(active: true) }
   scope :ordered,  -> { order(:label) }
 
-  # The 4 types that map to the CertificateRequest cert_type enum.
+  # The certificate types available for creation.
   SEED_TYPES = [
-    { key: 'payroll',    label: 'Certificado de Nómina', description: 'Ingresos y deducciones salariales' },
-    { key: 'labor',      label: 'Certificado Laboral', description: 'Relación laboral vigente con la empresa' },
-    { key: 'employment', label: 'Carta de Empleo',
-      description: 'Carta oficial para bancos, visa, tramitación de visa, etc.' },
-    { key: 'other',      label: 'Otro', description: 'Otra certificación emitida por RRHH' }
+    { key: 'payroll',    label: 'Certificado de Nómina',
+      description: 'Ingresos y deducciones salariales' },
+    { key: 'labor',      label: 'Certificado Laboral',
+      description: 'Relación laboral vigente con la empresa' },
+    { key: 'recommendation', label: 'Carta de Recomendación',
+      description: 'Carta de recomendación laboral para fines personales o profesionales' }
   ].freeze
 
   def associated_requests?
@@ -28,7 +29,7 @@ class CertificateType < ApplicationRecord
       find_or_create_by!(key: attrs[:key]) do |ct|
         ct.label       = attrs[:label]
         ct.description = attrs[:description]
-        ct.active      = false
+        ct.active      = true
       end
     end
   end

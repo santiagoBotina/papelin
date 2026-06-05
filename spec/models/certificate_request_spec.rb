@@ -35,7 +35,7 @@ RSpec.describe CertificateRequest, type: :model do
     # form and silence the cop.
     it {
       is_expected.to define_enum_for(:cert_type)
-        .with_values(payroll: 0, labor: 1, employment: 2, other: 3)
+        .with_values(payroll: 0, labor: 1, employment: 2, other: 3, recommendation: 4)
     }
 
     it {

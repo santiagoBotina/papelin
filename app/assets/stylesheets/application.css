@@ -202,6 +202,14 @@ body {
   font-weight: 400;
   margin: 12px 0 6px;
 }
+.prose-chat a, .prose-chat .prose a {
+  color: #7c3aed;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-chat a:hover {
+  color: #6d28d9;
+}
 
 /* ---------- Typing animation ---------- */
 @keyframes pulse-dot {

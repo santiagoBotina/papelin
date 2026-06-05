@@ -33,12 +33,12 @@ RSpec.describe Documents::ChunkingService do
         expect(chunk0_end).to eq(chunk1_start)
       end
 
-      it 'includes char_start and char_end in metadata JSON' do
-        meta0 = JSON.parse(chunks[0][:metadata])
-        expect(meta0).to have_key('char_start')
-        expect(meta0).to have_key('char_end')
-        expect(meta0['char_start']).to eq(0)
-        expect(meta0['char_end']).to eq(2000)
+      it 'includes char_start and char_end in metadata' do # rubocop:disable RSpec/MultipleExpectations
+        meta0 = chunks[0][:metadata]
+        expect(meta0).to have_key(:char_start)
+        expect(meta0).to have_key(:char_end)
+        expect(meta0[:char_start]).to eq(0)
+        expect(meta0[:char_end]).to eq(2000)
       end
     end
 
@@ -75,8 +75,8 @@ RSpec.describe Documents::ChunkingService do
 
       it 'the last chunk ends at or before the end of the text' do
         last = chunks.last
-        meta = JSON.parse(last[:metadata])
-        expect(meta['char_end']).to eq(text.length)
+        meta = last[:metadata]
+        expect(meta[:char_end]).to eq(text.length)
       end
 
       it 'every chunk has content present' do

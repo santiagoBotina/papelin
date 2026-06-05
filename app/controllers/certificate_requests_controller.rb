@@ -29,15 +29,15 @@ class CertificateRequestsController < ApplicationController
 
     unless @available_cert_types.include?(@certificate_request.cert_type)
       @certificate_request.errors.add(:cert_type, :unavailable,
-                                       message: 'no está disponible en este momento')
-      return render :new, status: :unprocessable_entity
+                                      message: 'no está disponible en este momento')
+      return render :new, status: :unprocessable_content
     end
 
     if @certificate_request.save
       redirect_to redirect_path_after_create,
                   notice: "Solicitud #{@certificate_request.reference_number} creada exitosamente."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -50,7 +50,7 @@ class CertificateRequestsController < ApplicationController
   end
 
   def redirect_path_after_create
-    conversation_id = params[:conversation_id]
+    conversation_id = params.dig(:certificate_request, :conversation_id)
     return conversation_path(conversation_id) if conversation_id.present?
 
     certificate_request_path(@certificate_request)
