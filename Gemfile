@@ -7,7 +7,7 @@ ruby '3.3.0'
 
 gem 'pg', '~> 1.5'
 gem 'puma', '~> 6.0'
-gem 'rails', '~> 7.2.0'
+gem 'rails', '~> 8.1.3'
 
 # Hotwire
 gem 'stimulus-rails'
