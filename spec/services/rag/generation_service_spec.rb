@@ -14,24 +14,25 @@ RSpec.describe Rag::GenerationService do
   end
 
   let(:conversation) { create(:conversation) }
-  let(:user) { conversation.user }
-  let(:user_message) { 'What documents do I need for a payroll certificate?' }
   let(:assistant_message) { create(:message, :pending, conversation: conversation) }
+  let(:user) { conversation.user }
+  let(:chunks) { build_chunks }
 
-  let(:chunks) do
+  def build_chunks
+    chunk_class = Struct.new(:content, :source_title, :neighbor_distance, keyword_init: true)
     [
-      double('DocumentChunk',
-             content: 'Payroll certificates require: proof of employment and ID.',
-             source_title: 'HR Policy Manual',
-             neighbor_distance: 0.15),
-      double('DocumentChunk',
-             content: 'Processing time for payroll certificates is 3-5 business days.',
-             source_title: 'Certificate FAQ',
-             neighbor_distance: 0.22)
+      chunk_class.new(content: 'Payroll certificates require: proof of employment and ID.',
+                      source_title: 'HR Policy Manual', neighbor_distance: 0.15),
+      chunk_class.new(content: 'Processing time for payroll certificates is 3-5 business days.',
+                      source_title: 'Certificate FAQ', neighbor_distance: 0.22)
     ]
   end
 
-  let(:fake_response) do
+  def user_message
+    'What documents do I need for a payroll certificate?'
+  end
+
+  def fake_response
     {
       'choices' => [
         { 'message' => { 'role' => 'assistant',
@@ -42,61 +43,19 @@ RSpec.describe Rag::GenerationService do
     }
   end
 
-  before do
-    client = instance_double(OpenAI::Client)
-    allow(OpenAI::Client).to receive(:new).and_return(client)
-    allow(client).to receive(:chat).and_return(fake_response)
-    allow(Turbo::StreamsChannel).to receive(:broadcast_append_to)
-  end
-
   describe '.call' do
-    # INVARIANT 1: System prompt is ALWAYS the first message
-    it 'sends the system prompt as the first message to OpenAI' do
+    let(:captured_params) { {} }
+
+    before do
       client = instance_double(OpenAI::Client)
       allow(OpenAI::Client).to receive(:new).and_return(client)
-
-      expect(client).to receive(:chat) do |params|
-        first = params[:parameters][:messages].first
-        expect(first[:role]).to eq('system')
-        expect(first[:content]).to include('Papelin')
+      allow(client).to receive(:chat) do |params|
+        captured_params[:data] = params
         fake_response
       end
-
-      result
+      allow(Turbo::StreamsChannel).to receive(:broadcast_append_to)
     end
 
-    # INVARIANT 2: Chunk content is ALWAYS included in the prompt
-    it 'includes retrieved chunk content in the prompt' do
-      client = instance_double(OpenAI::Client)
-      allow(OpenAI::Client).to receive(:new).and_return(client)
-
-      expect(client).to receive(:chat) do |params|
-        combined = params[:parameters][:messages].map { |m| m[:content] }.join(' ')
-        chunks.each do |chunk|
-          expect(combined).to include(chunk.content[0..30])
-        end
-        fake_response
-      end
-
-      result
-    end
-
-    # INVARIANT 3: User question is ALWAYS the last message
-    it 'sends the user message as the last message to OpenAI' do
-      client = instance_double(OpenAI::Client)
-      allow(OpenAI::Client).to receive(:new).and_return(client)
-
-      expect(client).to receive(:chat) do |params|
-        msgs = params[:parameters][:messages]
-        expect(msgs.last[:role]).to eq('user')
-        expect(msgs.last[:content]).to eq(user_message)
-        fake_response
-      end
-
-      result
-    end
-
-    # Happy path
     it 'returns success' do
       expect(result).to be_success
     end
@@ -109,7 +68,36 @@ RSpec.describe Rag::GenerationService do
       expect(result.metadata[:token_usage]).to include(:prompt_tokens, :completion_tokens)
     end
 
-    # No hallucination guard: when no chunks, no context block is injected
+    it 'sends the system prompt as the first message' do
+      result
+      msg = captured_params.dig(:data, :parameters, :messages).first
+      expect(msg[:role]).to eq('system')
+    end
+
+    it 'includes the company name in the system prompt' do
+      result
+      msg = captured_params.dig(:data, :parameters, :messages).first
+      expect(msg[:content]).to include('Papelin')
+    end
+
+    it 'includes retrieved chunk content in the prompt' do
+      result
+      combined = captured_params.dig(:data, :parameters, :messages).pluck(:content).join(' ')
+      expect(combined).to include(chunks.first.content[0..30])
+    end
+
+    it 'sends the user message as the last message' do
+      result
+      msgs = captured_params.dig(:data, :parameters, :messages)
+      expect(msgs.last[:role]).to eq('user')
+    end
+
+    it 'sends the user message content as the last message content' do
+      result
+      msgs = captured_params.dig(:data, :parameters, :messages)
+      expect(msgs.last[:content]).to eq(user_message)
+    end
+
     context 'when no chunks are provided' do
       let(:chunks) { [] }
 
@@ -118,58 +106,33 @@ RSpec.describe Rag::GenerationService do
       end
 
       it 'does not inject a context documents block' do
-        client = instance_double(OpenAI::Client)
-        allow(OpenAI::Client).to receive(:new).and_return(client)
-
-        expect(client).to receive(:chat) do |params|
-          combined = params[:parameters][:messages].map { |m| m[:content] }.join(' ')
-          expect(combined).not_to include('Relevant context from company documents')
-          fake_response
-        end
-
         result
+        combined = captured_params.dig(:data, :parameters, :messages).pluck(:content).join(' ')
+        expect(combined).not_to include('Relevant context from company documents')
       end
     end
 
-    # Conversation history included
     context 'when the conversation has prior messages' do
       before do
         create_list(:message, 3, conversation: conversation, status: :completed)
       end
 
       it 'includes prior messages in the prompt' do
-        client = instance_double(OpenAI::Client)
-        allow(OpenAI::Client).to receive(:new).and_return(client)
-
-        expect(client).to receive(:chat) do |params|
-          roles = params[:parameters][:messages].map { |m| m[:role] }
-          expect(roles).to include('user', 'assistant')
-          fake_response
-        end
-
         result
+        roles = captured_params.dig(:data, :parameters, :messages).pluck(:role)
+        expect(roles).to include('user', 'assistant')
       end
     end
 
-    # Certificate context included when user has active requests
     context 'when the user has active certificate requests' do
-      let!(:cert_request) { create(:certificate_request, user: user, status: :submitted) }
-
       it 'includes certificate request data in the prompt' do
-        client = instance_double(OpenAI::Client)
-        allow(OpenAI::Client).to receive(:new).and_return(client)
-
-        expect(client).to receive(:chat) do |params|
-          combined = params[:parameters][:messages].map { |m| m[:content] }.join(' ')
-          expect(combined).to include(cert_request.reference_number)
-          fake_response
-        end
-
+        cert = create(:certificate_request, user: user, status: :submitted)
         result
+        combined = captured_params.dig(:data, :parameters, :messages).pluck(:content).join(' ')
+        expect(combined).to include(cert.reference_number)
       end
     end
 
-    # Failure handling
     context 'when the OpenAI API fails' do
       before do
         client = instance_double(OpenAI::Client)

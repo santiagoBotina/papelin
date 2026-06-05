@@ -102,33 +102,34 @@ RSpec.describe 'Documents', type: :request do
     end
 
     describe 'POST /documents' do
-      it 'creates a document and enqueues ingest job' do
-        expect do
-          post documents_path, params: {
-            document: {
-              title: 'Test Document',
-              description: 'A test',
-              doc_type: :policy,
-              file: fixture_file_upload('spec/fixtures/files/sample.txt', 'text/plain')
-            }
+      let(:upload_params) do
+        {
+          document: {
+            title: 'Test Document',
+            description: 'A test',
+            doc_type: :policy,
+            file: fixture_file_upload('spec/fixtures/files/sample.txt', 'text/plain')
           }
-        end.to change(Document, :count).by(1)
+        }
+      end
 
+      it 'creates a new document' do
+        expect { post documents_path, params: upload_params }.to change(Document, :count).by(1)
+      end
+
+      it 'sets the document title' do
+        post documents_path, params: upload_params
         expect(Document.last.title).to eq('Test Document')
+      end
+
+      it 'redirects to documents list' do
+        post documents_path, params: upload_params
         expect(response).to redirect_to(documents_path)
       end
 
       it 'enqueues Documents::IngestJob' do
-        expect do
-          post documents_path, params: {
-            document: {
-              title: 'Test Document',
-              description: 'A test',
-              doc_type: :policy,
-              file: fixture_file_upload('spec/fixtures/files/sample.txt', 'text/plain')
-            }
-          }
-        end.to have_enqueued_job(Documents::IngestJob)
+        expect { post documents_path, params: upload_params }
+          .to have_enqueued_job(Documents::IngestJob)
       end
     end
 

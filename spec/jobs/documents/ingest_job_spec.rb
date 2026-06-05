@@ -8,6 +8,9 @@ RSpec.describe Documents::IngestJob, type: :job do
   # Stub all three services to prevent real calls.
   # The service classes don't exist yet (Phase 4 is pending); we define
   # minimal stub classes here so the job can reference them.
+  # Use plain doubles for the stub service results because the service
+  # classes themselves are stubs (they don't exist yet). instance_double
+  # would attempt to verify against a non-existent Result constant.
   before do
     stub_const('Documents::TextExtractorService', Class.new do
       def self.call(...); end
@@ -20,18 +23,14 @@ RSpec.describe Documents::IngestJob, type: :job do
     end)
 
     allow(Documents::TextExtractorService).to receive(:call).and_return(
-      instance_double(
-        Documents::TextExtractorService::Result,
-        success?: true, text: 'Extracted text content', error: nil
-      )
+      double(success?: true, text: 'Extracted text content', error: nil)
     )
     allow(Documents::ChunkingService).to receive(:call).and_return(
       [{ document_id: document.id, content: 'chunk text', chunk_index: 0,
          metadata: '{}', created_at: Time.current, updated_at: Time.current }]
     )
     allow(Documents::EmbedService).to receive(:call).and_return(
-      instance_double(
-        Documents::EmbedService::Result,
+      double(
         success?: true,
         chunks: [{ document_id: document.id, content: 'chunk text', chunk_index: 0,
                    metadata: '{}', embedding: Array.new(1536, 0.0),
@@ -43,7 +42,7 @@ RSpec.describe Documents::IngestJob, type: :job do
   end
 
   describe '#perform' do
-    context 'happy path' do
+    context 'when on the happy path' do
       it 'transitions document from pending to ready' do
         described_class.perform_now(document.id)
         expect(document.reload.status).to eq('ready')
@@ -55,21 +54,26 @@ RSpec.describe Documents::IngestJob, type: :job do
       end
 
       it 'calls insert_all to persist chunks' do
-        expect(DocumentChunk).to receive(:insert_all)
+        allow(DocumentChunk).to receive(:insert_all)
         described_class.perform_now(document.id)
+        expect(DocumentChunk).to have_received(:insert_all)
       end
     end
 
-    context 'idempotency' do
+    context 'when running idempotently' do
       it 'skips processing if document is already ready' do
         document.update!(status: :ready)
+        # rubocop:disable RSpec/MessageSpies
         expect(Documents::TextExtractorService).not_to receive(:call)
+        # rubocop:enable RSpec/MessageSpies
         described_class.perform_now(document.id)
       end
 
       it 'skips processing if document is already failed' do
         document.update!(status: :failed)
+        # rubocop:disable RSpec/MessageSpies
         expect(Documents::TextExtractorService).not_to receive(:call)
+        # rubocop:enable RSpec/MessageSpies
         described_class.perform_now(document.id)
       end
     end
@@ -77,10 +81,7 @@ RSpec.describe Documents::IngestJob, type: :job do
     context 'when text extraction fails' do
       before do
         allow(Documents::TextExtractorService).to receive(:call).and_return(
-          instance_double(
-            Documents::TextExtractorService::Result,
-            success?: false, text: nil, error: 'PDF parsing error'
-          )
+          double(success?: false, text: nil, error: 'PDF parsing error')
         )
       end
 
@@ -95,7 +96,9 @@ RSpec.describe Documents::IngestJob, type: :job do
       end
 
       it 'does not call ChunkingService' do
+        # rubocop:disable RSpec/MessageSpies
         expect(Documents::ChunkingService).not_to receive(:call)
+        # rubocop:enable RSpec/MessageSpies
         described_class.perform_now(document.id)
       end
     end
@@ -103,10 +106,7 @@ RSpec.describe Documents::IngestJob, type: :job do
     context 'when embedding fails' do
       before do
         allow(Documents::EmbedService).to receive(:call).and_return(
-          instance_double(
-            Documents::EmbedService::Result,
-            success?: false, chunks: nil, error: 'OpenAI rate limited'
-          )
+          double(success?: false, chunks: nil, error: 'OpenAI rate limited')
         )
       end
 
@@ -116,7 +116,9 @@ RSpec.describe Documents::IngestJob, type: :job do
       end
 
       it 'does not persist any chunks' do
+        # rubocop:disable RSpec/MessageSpies
         expect(DocumentChunk).not_to receive(:insert_all)
+        # rubocop:enable RSpec/MessageSpies
         described_class.perform_now(document.id)
       end
     end
@@ -128,7 +130,7 @@ RSpec.describe Documents::IngestJob, type: :job do
       end
     end
 
-    context 'queue configuration' do
+    context 'with queue configuration' do
       it 'is enqueued on the ingestion queue' do
         expect(described_class.queue_name).to eq('ingestion')
       end

@@ -21,7 +21,6 @@ RSpec.describe Message, type: :model do
 
   describe 'scopes' do
     describe '.completed' do
-      # rubocop:disable RSpec/MultipleExpectations
       # Verbatim from PROMPT.md §2.3: positive AND negative inclusion in one example.
       it 'returns only completed messages' do
         completed = create(:message, status: :completed)
@@ -29,7 +28,6 @@ RSpec.describe Message, type: :model do
         expect(described_class.completed).to include(completed)
         expect(described_class.completed).not_to include(pending)
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
   end
 

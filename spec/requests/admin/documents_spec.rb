@@ -127,14 +127,26 @@ RSpec.describe 'Admin::Documents', type: :request do
 
     describe 'PATCH /admin/documents/:id' do
       context 'with valid params (no file change)' do
-        it 'updates the document and redirects' do
-          patch admin_document_path(document),
-                params: { document: { title: 'Updated Title', description: 'Updated desc' } }
+        let(:update_params) do
+          { document: { title: 'Updated Title', description: 'Updated desc' } }
+        end
 
+        it 'redirects to the document show page' do
+          patch admin_document_path(document), params: update_params
           expect(response).to redirect_to(admin_document_path(document))
           expect(flash[:notice]).to eq('Documento actualizado.')
-          expect(document.reload.title).to eq('Updated Title')
-          expect(document.reload.description).to eq('Updated desc')
+        end
+
+        it 'updates the document title' do
+          expect do
+            patch admin_document_path(document), params: update_params
+          end.to change { document.reload.title }.to('Updated Title')
+        end
+
+        it 'updates the document description' do
+          expect do
+            patch admin_document_path(document), params: update_params
+          end.to change { document.reload.description }.to('Updated desc')
         end
 
         it 'does not enqueue an ingest job' do
@@ -149,17 +161,27 @@ RSpec.describe 'Admin::Documents', type: :request do
         let(:file_params) do
           { file: fixture_file_upload('spec/fixtures/files/sample.txt', 'text/plain') }
         end
+        let(:patch_with_file) do
+          patch admin_document_path(document),
+                params: { document: { title: 'With File', **file_params } }
+        end
 
-        it 'updates metadata and enqueues ingest job' do
-          expect do
-            patch admin_document_path(document),
-                  params: { document: { title: 'With File', **file_params } }
-          end.to have_enqueued_job(Documents::IngestJob).with(document.id)
+        it 'enqueues an ingest job' do
+          expect { patch_with_file }.to have_enqueued_job(Documents::IngestJob).with(document.id)
+        end
 
+        it 'redirects with a notice' do
+          patch_with_file
           expect(response).to redirect_to(admin_document_path(document))
           expect(flash[:notice]).to eq('Documento actualizado — reingesta en proceso.')
-          expect(document.reload.title).to eq('With File')
-          expect(document.reload.status).to eq('pending')
+        end
+
+        it 'resets the document status to pending' do
+          expect { patch_with_file }.to change { document.reload.status }.to('pending')
+        end
+
+        it 'updates the document title' do
+          expect { patch_with_file }.to change { document.reload.title }.to('With File')
         end
 
         it 'destroys existing chunks before re-ingesting' do
@@ -185,16 +207,24 @@ RSpec.describe 'Admin::Documents', type: :request do
     describe 'POST /admin/documents/:id/reingest' do
       context 'when document is failed' do
         let(:failed_doc) { create(:document, :failed) }
+        let(:reingest_request) { post reingest_admin_document_path(failed_doc) }
 
-        it 'resets status to pending and enqueues ingest job' do
-          expect do
-            post reingest_admin_document_path(failed_doc)
-          end.to have_enqueued_job(Documents::IngestJob).with(failed_doc.id)
+        it 'enqueues an ingest job for the failed document' do
+          expect { reingest_request }.to have_enqueued_job(Documents::IngestJob).with(failed_doc.id)
+        end
 
+        it 'redirects with a notice' do
+          reingest_request
           expect(response).to redirect_to(admin_document_path(failed_doc))
           expect(flash[:notice]).to eq('Reingesta iniciada.')
-          expect(failed_doc.reload.status).to eq('pending')
-          expect(failed_doc.reload.processing_error).to be_nil
+        end
+
+        it 'resets the document to pending' do
+          expect { reingest_request }.to change { failed_doc.reload.status }.to('pending')
+        end
+
+        it 'clears the processing error' do
+          expect { reingest_request }.to change { failed_doc.reload.processing_error }.to(nil)
         end
 
         it 'destroys existing chunks' do
@@ -223,26 +253,26 @@ RSpec.describe 'Admin::Documents', type: :request do
     end
 
     describe 'DELETE /admin/documents/:id' do
-      it 'deletes the document and redirects' do
+      it 'deletes the document' do
         doc = create(:document, :ready)
         expect do
           delete admin_document_path(doc)
         end.to change(Document, :count).by(-1)
+      end
 
+      it 'redirects with a notice' do
+        doc = create(:document, :ready)
+        delete admin_document_path(doc)
         expect(response).to redirect_to(admin_documents_path)
         expect(flash[:notice]).to eq('Documento eliminado.')
       end
 
       it 'calls purge_later on the attached file' do
         doc = create(:document, :ready)
-        # Attach a file so purge_later is triggered
-        doc.file.attach(
-          io: StringIO.new('fake content'),
-          filename: 'test.txt',
-          content_type: 'text/plain'
-        )
-
+        doc.file.attach(io: StringIO.new('fake content'), filename: 'test.txt', content_type: 'text/plain')
+        # rubocop:disable RSpec/AnyInstance
         expect_any_instance_of(ActiveStorage::Attached::One).to receive(:purge_later).once
+        # rubocop:enable RSpec/AnyInstance
         delete admin_document_path(doc)
       end
 

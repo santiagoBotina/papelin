@@ -132,7 +132,7 @@ RSpec.describe 'Admin::Users', type: :request do
 
       it 're-renders new on invalid params' do
         post admin_users_path, params: { user: { email: '' } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 
@@ -152,7 +152,7 @@ RSpec.describe 'Admin::Users', type: :request do
 
       it 're-renders edit on invalid params' do
         patch admin_user_path(target_user), params: { user: { employee_id: '' } }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
   end

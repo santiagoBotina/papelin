@@ -8,39 +8,44 @@ class MessagesController < ApplicationController
     content = message_params[:content].to_s.strip
     return redirect_to @conversation if content.blank?
 
-    @user_message = @conversation.messages.create!(
-      role: :user,
-      content: content,
-      status: :completed
-    )
+    create_user_message!(content)
+    create_assistant_message!
 
-    @assistant_message = @conversation.messages.create!(
-      role: :assistant,
-      content: '',
-      status: :pending
-    )
-
-    # Broadcast both messages immediately so the UI updates before the job finishes
-    stream_name = "conversation_#{@conversation.id}"
-    Turbo::StreamsChannel.broadcast_append_to(
-      stream_name,
-      target: 'messages',
-      partial: 'messages/message',
-      locals: { message: @user_message }
-    )
-    Turbo::StreamsChannel.broadcast_append_to(
-      stream_name,
-      target: 'messages',
-      partial: 'messages/message',
-      locals: { message: @assistant_message }
-    )
-
+    broadcast_messages
     Rag::QueryJob.perform_later(@assistant_message.id, content)
 
     redirect_to @conversation
   end
 
   private
+
+  def create_user_message!(content)
+    @user_message = @conversation.messages.create!(
+      role: :user,
+      content: content,
+      status: :completed
+    )
+  end
+
+  def create_assistant_message!
+    @assistant_message = @conversation.messages.create!(
+      role: :assistant,
+      content: '',
+      status: :pending
+    )
+  end
+
+  def broadcast_messages
+    stream_name = "conversation_#{@conversation.id}"
+    [@user_message, @assistant_message].each do |msg|
+      Turbo::StreamsChannel.broadcast_append_to(
+        stream_name,
+        target: 'messages',
+        partial: 'messages/message',
+        locals: { message: msg }
+      )
+    end
+  end
 
   def message_params
     params.require(:message).permit(:content)

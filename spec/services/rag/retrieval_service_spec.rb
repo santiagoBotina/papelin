@@ -9,6 +9,8 @@ RSpec.describe Rag::RetrievalService do
     subject(:result) { described_class.call(query_embedding: embedding) }
 
     context 'when matching chunks exist in ready documents' do
+      # rubocop:disable RSpec/VerifiedDoubles
+      # neighbor_distance is dynamically added by the neighbor gem
       let(:chunk) do
         double('DocumentChunk',
                id: 1,
@@ -17,6 +19,7 @@ RSpec.describe Rag::RetrievalService do
                source_title: 'HR Policy Manual',
                neighbor_distance: 0.1)
       end
+      # rubocop:enable RSpec/VerifiedDoubles
       let(:chunks_result) { [chunk] }
 
       before do
@@ -36,9 +39,11 @@ RSpec.describe Rag::RetrievalService do
     end
 
     context 'when chunks exist but are below the similarity threshold' do
+      # rubocop:disable RSpec/VerifiedDoubles
       let(:distant_chunk) do
         double('DocumentChunk', neighbor_distance: 0.9, content: 'Irrelevant content')
       end
+      # rubocop:enable RSpec/VerifiedDoubles
       let(:chunks_result) { [distant_chunk] }
 
       before do

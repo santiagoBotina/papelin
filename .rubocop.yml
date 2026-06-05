@@ -27,6 +27,12 @@ Rails:
 RSpec:
   Enabled: true
 
+RSpec/MultipleExpectations:
+  Max: 2
+
+RSpec/NestedGroups:
+  Max: 4
+
 Metrics/MethodLength:
   Max: 20
 

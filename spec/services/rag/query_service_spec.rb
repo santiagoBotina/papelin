@@ -14,11 +14,14 @@ RSpec.describe Rag::QueryService do
 
   let(:conversation) { create(:conversation) }
   let(:user) { conversation.user }
-  let(:user_message) { 'What documents do I need for a payroll certificate?' }
   let(:assistant_message) { create(:message, :pending, conversation: conversation) }
   let(:embedding) { Array.new(1536) { rand(-1.0..1.0) } }
 
-  let(:gen_result) do
+  def user_message
+    'What documents do I need for a payroll certificate?'
+  end
+
+  def gen_result
     Rag::GenerationService::Result.new(
       success?: true,
       content: 'You need these documents for a payroll certificate...',
@@ -40,11 +43,9 @@ RSpec.describe Rag::QueryService do
   end
 
   describe '.call' do
-    # Happy path
     context 'when relevant chunks exist and OpenAI responds' do
-      let!(:chunk) { create(:document_chunk, document: create(:document, :ready)) }
-
       before do
+        chunk = create(:document_chunk, document: create(:document, :ready))
         allow(Rag::RetrievalService).to receive(:call).with(query_embedding: embedding).and_return(
           Rag::RetrievalService::Result.new(success?: true, chunks: [chunk], error: nil)
         )
@@ -77,15 +78,15 @@ RSpec.describe Rag::QueryService do
       end
     end
 
-    # No relevant chunks
     context 'when no relevant chunks are found' do
-      it 'still calls GenerationService with empty chunks' do
+      before do
         allow(Rag::GenerationService).to receive(:call).with(
           hash_including(chunks: [])
         ).and_return(gen_result)
+      end
 
+      it 'calls GenerationService with empty chunks' do
         result
-
         expect(Rag::GenerationService).to have_received(:call).with(
           hash_including(chunks: [])
         )
@@ -96,7 +97,6 @@ RSpec.describe Rag::QueryService do
       end
     end
 
-    # Embedding failure
     context 'when the embeddings API call fails' do
       before do
         allow(Rag::EmbedService).to receive(:call).with(text: user_message).and_return(
@@ -113,6 +113,7 @@ RSpec.describe Rag::QueryService do
         expect(assistant_message.reload.status).to eq('failed')
       end
 
+      # rubocop:disable RSpec/MessageSpies
       it 'does not call RetrievalService' do
         expect(Rag::RetrievalService).not_to receive(:call)
         result
@@ -122,9 +123,9 @@ RSpec.describe Rag::QueryService do
         expect(Rag::GenerationService).not_to receive(:call)
         result
       end
+      # rubocop:enable RSpec/MessageSpies
     end
 
-    # Retrieval failure
     context 'when the retrieval API call fails' do
       before do
         allow(Rag::RetrievalService).to receive(:call).with(query_embedding: embedding).and_return(
@@ -141,13 +142,14 @@ RSpec.describe Rag::QueryService do
         expect(assistant_message.reload.status).to eq('failed')
       end
 
+      # rubocop:disable RSpec/MessageSpies
       it 'does not call GenerationService' do
         expect(Rag::GenerationService).not_to receive(:call)
         result
       end
+      # rubocop:enable RSpec/MessageSpies
     end
 
-    # Chat completion failure
     context 'when the chat completion API call fails' do
       before do
         allow(Rag::GenerationService).to receive(:call).and_return(
@@ -167,17 +169,16 @@ RSpec.describe Rag::QueryService do
       end
     end
 
-    # History
     context 'when the conversation has prior messages' do
-      before { create_list(:message, 4, conversation: conversation, status: :completed) }
-
-      it 'passes conversation to GenerationService' do
+      before do
+        create_list(:message, 4, conversation: conversation, status: :completed)
         allow(Rag::GenerationService).to receive(:call).with(
           hash_including(conversation: conversation)
         ).and_return(gen_result)
+      end
 
+      it 'passes conversation to GenerationService' do
         result
-
         expect(Rag::GenerationService).to have_received(:call).with(
           hash_including(conversation: conversation)
         )
@@ -188,27 +189,27 @@ RSpec.describe Rag::QueryService do
       end
     end
 
-    # Certificate request context
     context 'when the user has an active certificate request' do
-      let!(:cert) { create(:certificate_request, user: user, status: :submitted) }
-
-      it 'passes the user to GenerationService' do
+      before do
+        create(:certificate_request, user: user, status: :submitted)
         allow(Rag::GenerationService).to receive(:call).with(
           hash_including(user: user)
         ).and_return(gen_result)
+      end
 
+      it 'passes the user to GenerationService' do
         result
-
         expect(Rag::GenerationService).to have_received(:call).with(
           hash_including(user: user)
         )
-        expect(cert).to be_present # reference to suppress LetSetup warning
       end
     end
 
-    # Status transitions
-    it 'transitions assistant message from pending to completed' do
+    it 'starts with pending status' do
       expect(assistant_message.status).to eq('pending')
+    end
+
+    it 'transitions assistant message to completed after call' do
       result
       expect(assistant_message.reload.status).to eq('completed')
     end

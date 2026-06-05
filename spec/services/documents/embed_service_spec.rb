@@ -30,8 +30,9 @@ RSpec.describe Documents::EmbedService do
       end
 
       it 'calls Rag::EmbedService for each chunk' do
-        expect(Rag::EmbedService).to receive(:call).exactly(3).times.and_call_original
+        allow(Rag::EmbedService).to receive(:call).and_call_original
         result
+        expect(Rag::EmbedService).to have_received(:call).exactly(3).times
       end
     end
 
@@ -44,7 +45,9 @@ RSpec.describe Documents::EmbedService do
       end
 
       it 'makes no OpenAI API calls' do
+        # rubocop:disable RSpec/MessageSpies
         expect(Rag::EmbedService).not_to receive(:call)
+        # rubocop:enable RSpec/MessageSpies
         result
       end
     end

@@ -49,7 +49,7 @@ RSpec.describe CertificateRequest, type: :model do
     describe '.pending_for' do
       let(:user) { create(:user) }
 
-      # rubocop:disable RSpec/MultipleExpectations, RSpec/ExampleLength
+      # rubocop:disable RSpec/ExampleLength
       # Verbatim from PROMPT.md §2.6: positive AND negative inclusion in
       # one example, with the unowned-but-same-status case as a third
       # fixture, to prove both the user scope and the status filter.
@@ -62,7 +62,7 @@ RSpec.describe CertificateRequest, type: :model do
         expect(result).to include(active)
         expect(result).not_to include(other, deliver)
       end
-      # rubocop:enable RSpec/MultipleExpectations, RSpec/ExampleLength
+      # rubocop:enable RSpec/ExampleLength
     end
   end
 

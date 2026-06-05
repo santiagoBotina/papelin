@@ -22,7 +22,6 @@ RSpec.describe Conversation, type: :model do
 
   describe 'scopes' do
     describe '.active' do
-      # rubocop:disable RSpec/MultipleExpectations
       # Verbatim from PROMPT.md §2.2: positive AND negative inclusion in one example
       # is more readable than splitting.
       it 'returns only active conversations' do
@@ -31,7 +30,6 @@ RSpec.describe Conversation, type: :model do
         expect(described_class.active).to include(active)
         expect(described_class.active).not_to include(archived)
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
 
     describe '.recent' do

@@ -63,11 +63,12 @@ RSpec.describe 'Conversations', type: :request do
     end
 
     describe 'POST /conversations' do
-      it 'creates a conversation and redirects' do
-        expect do
-          post conversations_path
-        end.to change(Conversation, :count).by(1)
+      it 'creates a new conversation' do
+        expect { post conversations_path }.to change(Conversation, :count).by(1)
+      end
 
+      it 'redirects to the new conversation' do
+        post conversations_path
         expect(response).to have_http_status(:redirect)
         expect(response).to redirect_to(conversation_path(Conversation.last))
       end
@@ -83,12 +84,14 @@ RSpec.describe 'Conversations', type: :request do
         expect(response).to redirect_to(conversations_path)
       end
 
+      it 'does not delete another user\'s conversation' do
+        conversation = create(:conversation, user: other)
+        expect { delete conversation_path(conversation) }.not_to change(Conversation, :count)
+      end
+
       it 'redirects with error when deleting another user\'s conversation' do
         conversation = create(:conversation, user: other)
-        expect do
-          delete conversation_path(conversation)
-        end.not_to change(Conversation, :count)
-
+        delete conversation_path(conversation)
         expect(response).to redirect_to(root_path)
         expect(flash[:error]).to be_present
       end

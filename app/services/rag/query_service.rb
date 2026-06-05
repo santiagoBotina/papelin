@@ -25,13 +25,7 @@ module Rag
       retrieval = retrieve(embed.embedding)
       return mark_failed!(retrieval.error) unless retrieval.success?
 
-      generation = generate(retrieval.chunks)
-      return mark_failed!(generation.error) unless generation.success?
-
-      persist_success!(generation, retrieval.chunks)
-      @conversation.generate_title_from(@user_message)
-
-      Result.new(success?: true, message: @assistant_message, error: nil)
+      generate_and_persist(retrieval)
     end
 
     private
@@ -44,25 +38,27 @@ module Rag
       Rag::RetrievalService.call(query_embedding: query_embedding)
     end
 
-    def generate(chunks)
-      Rag::GenerationService.call(
+    def generate_and_persist(retrieval)
+      generation = Rag::GenerationService.call(
         conversation: @conversation,
-        chunks: chunks,
+        chunks: retrieval.chunks,
         user_message: @user_message,
         user: @user,
         assistant_message: @assistant_message
       )
-    end
+      return mark_failed!(generation.error) unless generation.success?
 
-    def persist_success!(generation, chunks)
       @assistant_message.update!(
         content: generation.content,
         status: :completed,
         metadata: {
-          sources: chunks.map { |c| { 'title' => c.source_title } }.uniq,
+          sources: retrieval.chunks.map { |c| { 'title' => c.source_title } }.uniq,
           token_usage: generation.metadata[:token_usage]
         }
       )
+      @conversation.generate_title_from(@user_message)
+
+      Result.new(success?: true, message: @assistant_message, error: nil)
     end
 
     def mark_failed!(error)

@@ -20,12 +20,19 @@ RSpec.describe 'Messages', type: :request do
     describe 'POST /conversations/:conversation_id/messages' do
       let(:valid_params) { { message: { content: 'What documents do I need?' } } }
 
-      it 'creates a user message and a pending assistant message' do
-        expect do
-          post conversation_messages_path(conversation), params: valid_params
-        end.to change(Message, :count).by(2)
+      it 'creates two messages (user + pending assistant)' do
+        expect { post conversation_messages_path(conversation), params: valid_params }
+          .to change(Message, :count).by(2)
+      end
 
-        expect(conversation.messages.where(role: :user).last.content).to eq('What documents do I need?')
+      it 'saves the user message content' do
+        post conversation_messages_path(conversation), params: valid_params
+        expect(conversation.messages.where(role: :user).last.content)
+          .to eq('What documents do I need?')
+      end
+
+      it 'creates a pending assistant message' do
+        post conversation_messages_path(conversation), params: valid_params
         expect(conversation.messages.where(role: :assistant).last).to be_pending
       end
 
@@ -40,15 +47,10 @@ RSpec.describe 'Messages', type: :request do
         expect(response).to redirect_to(conversation_path(conversation))
       end
 
-      it 'handle job enqueue with correct arguments' do
-        assistant_message = nil
-        expect do
-          post conversation_messages_path(conversation), params: valid_params
-          assistant_message = conversation.messages.where(role: :assistant).last
-        end.to(have_enqueued_job(Rag::QueryJob).with do |msg_id, content|
-          expect(msg_id).to eq(assistant_message&.id)
-          expect(content).to eq('What documents do I need?')
-        end)
+      it 'enqueues job with correct message id and content' do
+        post conversation_messages_path(conversation), params: valid_params
+        assistant_message = conversation.messages.where(role: :assistant).last
+        expect(Rag::QueryJob).to have_been_enqueued.with(assistant_message.id, 'What documents do I need?')
       end
 
       context 'with empty content' do

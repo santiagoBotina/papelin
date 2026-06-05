@@ -16,38 +16,34 @@ RSpec.describe Rag::QueryJob, type: :job do
     end)
 
     allow(Rag::QueryService).to receive(:call).and_return(
-      instance_double(
-        Rag::QueryService::Result,
-        success?: true,
-        message: assistant_message,
-        error: nil
-      )
+      double(success?: true, message: assistant_message, error: nil)
     )
   end
 
   describe '#perform' do
-    context 'happy path' do
+    context 'when on the happy path' do
       it 'calls Rag::QueryService with correct arguments' do
-        expect(Rag::QueryService).to receive(:call).with(
-          conversation: conversation,
-          user_message: user_content,
-          user: user,
-          assistant_message: assistant_message
-        )
         described_class.perform_now(assistant_message.id, user_content)
+        expect(Rag::QueryService).to have_received(:call).with(conversation: conversation,
+                                                               user_message: user_content, user: user,
+                                                               assistant_message: assistant_message)
       end
     end
 
-    context 'idempotency' do
+    context 'when running idempotently' do
       it 'skips if message is already completed' do
         assistant_message.update!(status: :completed, content: 'already done')
+        # rubocop:disable RSpec/MessageSpies
         expect(Rag::QueryService).not_to receive(:call)
+        # rubocop:enable RSpec/MessageSpies
         described_class.perform_now(assistant_message.id, user_content)
       end
 
       it 'skips if message is already failed' do
         assistant_message.update!(status: :failed)
+        # rubocop:disable RSpec/MessageSpies
         expect(Rag::QueryService).not_to receive(:call)
+        # rubocop:enable RSpec/MessageSpies
         described_class.perform_now(assistant_message.id, user_content)
       end
     end
@@ -55,12 +51,7 @@ RSpec.describe Rag::QueryJob, type: :job do
     context 'when Rag::QueryService returns failure' do
       before do
         allow(Rag::QueryService).to receive(:call).and_return(
-          instance_double(
-            Rag::QueryService::Result,
-            success?: false,
-            message: nil,
-            error: 'OpenAI timeout'
-          )
+          double(success?: false, message: nil, error: 'OpenAI timeout')
         )
       end
 
@@ -70,8 +61,9 @@ RSpec.describe Rag::QueryJob, type: :job do
       end
 
       it 'logs the error' do
-        expect(Rails.logger).to receive(:error).with(/OpenAI timeout/)
+        allow(Rails.logger).to receive(:error)
         described_class.perform_now(assistant_message.id, user_content)
+        expect(Rails.logger).to have_received(:error).with(/OpenAI timeout/)
       end
     end
 
@@ -83,7 +75,7 @@ RSpec.describe Rag::QueryJob, type: :job do
       end
     end
 
-    context 'queue configuration' do
+    context 'with queue configuration' do
       it 'is enqueued on the default queue' do
         expect(described_class.queue_name).to eq('default')
       end

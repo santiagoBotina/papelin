@@ -36,7 +36,6 @@ RSpec.describe Document, type: :model do
 
   describe 'scopes' do
     describe '.ready' do
-      # rubocop:disable RSpec/MultipleExpectations
       # Verbatim from PROMPT.md §2.4: positive AND negative inclusion in one example.
       it 'returns only documents with status :ready' do
         ready      = create(:document, status: :ready)
@@ -44,7 +43,6 @@ RSpec.describe Document, type: :model do
         expect(described_class.ready).to include(ready)
         expect(described_class.ready).not_to include(processing)
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
   end
 

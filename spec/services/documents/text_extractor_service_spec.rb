@@ -16,8 +16,8 @@ RSpec.describe Documents::TextExtractorService do
           content_type: 'application/pdf'
         )
 
-        fake_page = double('page', text: 'Extracted text from PDF')
-        fake_reader = double('reader', pages: [fake_page])
+        fake_page = instance_double(PDF::Reader::Page, text: 'Extracted text from PDF')
+        fake_reader = instance_double(PDF::Reader, pages: [fake_page])
         allow(PDF::Reader).to receive(:new).and_return(fake_reader)
       end
 
@@ -35,7 +35,10 @@ RSpec.describe Documents::TextExtractorService do
           content_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
 
-        fake_doc = double('doc', paragraphs: [double('paragraph', text: 'Paragraph 1')])
+        # rubocop:disable RSpec/VerifiedDoubles
+        fake_paragraph = double('paragraph', text: 'Paragraph 1')
+        fake_doc = double('doc', paragraphs: [fake_paragraph])
+        # rubocop:enable RSpec/VerifiedDoubles
         allow(Docx::Document).to receive(:open).and_return(fake_doc)
       end
 
@@ -117,6 +120,9 @@ RSpec.describe Documents::TextExtractorService do
       it 'strips null bytes and control characters from extracted text' do
         expect(result).to be_success
         expect(result.text).to eq('HelloWorldTestDone')
+      end
+
+      it 'removes all null bytes from extracted text' do
         expect(result.text).not_to include("\x00")
       end
     end
