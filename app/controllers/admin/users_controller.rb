@@ -20,6 +20,7 @@ module Admin
 
     def create
       @user = User.new(user_params)
+      @user.role = params[:user][:role] if params[:user][:role].present?
       if @user.save
         redirect_to admin_user_path(@user), notice: 'User created.'
       else
@@ -29,6 +30,7 @@ module Admin
 
     def update
       @user = User.find(params[:id])
+      @user.role = params[:user][:role] if params[:user][:role].present?
       if @user.update(user_params)
         redirect_to admin_user_path(@user), notice: 'User updated.'
       else
@@ -46,7 +48,7 @@ module Admin
 
     def user_params
       params.require(:user).permit(:email, :password, :password_confirmation,
-                                   :first_name, :last_name, :employee_id, :role)
+                                   :first_name, :last_name, :employee_id)
     end
   end
 end
